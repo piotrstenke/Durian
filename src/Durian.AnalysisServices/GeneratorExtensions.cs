@@ -1,7 +1,7 @@
 ﻿using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Analysis.Extensions;
+namespace Durian.Analysis;
 
 /// <summary>
 /// Contains various extension methods for <see cref="ISourceGenerator"/>s.

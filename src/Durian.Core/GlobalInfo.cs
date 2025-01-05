@@ -13,7 +13,7 @@ public static class GlobalInfo
 	/// <summary>
 	/// Specifies the maximal valid value of the <see cref="DurianModule"/> enum.
 	/// </summary>
-	public static DurianModule ModuleMax => DurianModule.CopyFrom;
+	public static DurianModule ModuleMax => DurianModule.GlobalScope;
 
 	/// <summary>
 	/// Specifies the minimal valid value of the <see cref="DurianModule"/> enum.
@@ -38,7 +38,7 @@ public static class GlobalInfo
 	/// <summary>
 	/// Specifies the maximal valid value of the <see cref="DurianPackage"/> enum.
 	/// </summary>
-	public static DurianPackage PackageMax => DurianPackage.CopyFrom;
+	public static DurianPackage PackageMax => DurianPackage.GlobalScope;
 
 	/// <summary>
 	/// Specifies the minimal valid value of the <see cref="DurianPackage"/> enum.

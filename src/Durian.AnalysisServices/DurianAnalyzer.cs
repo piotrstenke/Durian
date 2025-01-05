@@ -46,9 +46,6 @@ public abstract class DurianAnalyzer : DiagnosticAnalyzer, IDurianAnalyzer
 		Register(c);
 	}
 
-	/// <inheritdoc cref="IDurianAnalyzer.Register(IDurianAnalysisContext, CSharpCompilation)"/>
-	public abstract void Register(IDurianAnalysisContext context);
-
 	IEnumerable<DiagnosticDescriptor> IDurianAnalyzer.GetSupportedDiagnostics()
 	{
 		return SupportedDiagnostics;
@@ -58,6 +55,10 @@ public abstract class DurianAnalyzer : DiagnosticAnalyzer, IDurianAnalyzer
 	{
 		Register(context, compilation);
 	}
+
+
+	/// <inheritdoc cref="IDurianAnalyzer.Register(IDurianAnalysisContext, CSharpCompilation)"/>
+	protected abstract void Register(IDurianAnalysisContext context);
 
 	/// <inheritdoc cref="IDurianAnalyzer.Register(IDurianAnalysisContext, CSharpCompilation)"/>
 	protected virtual void Register(IDurianAnalysisContext context, CSharpCompilation compilation)

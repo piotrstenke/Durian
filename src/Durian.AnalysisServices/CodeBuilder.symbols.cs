@@ -4,9 +4,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Reflection.Metadata;
 using Durian.Analysis.CodeGeneration;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis;

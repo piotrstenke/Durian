@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -56,9 +54,15 @@ public sealed partial class CopyFromAnalyzer : DurianAnalyzer<CopyFromCompilatio
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context, CopyFromCompilationData compilation)
+	protected override void Register(IDurianAnalysisContext context, CopyFromCompilationData compilation)
 	{
 		context.RegisterSyntaxNodeAction(c => AnalyzeAttributeSyntax(c, compilation), SyntaxKind.Attribute);
+	}
+
+	/// <inheritdoc/>
+	protected override CopyFromCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
+	{
+		return new CopyFromCompilationData(compilation);
 	}
 
 	internal static bool HasCopyFromsOnCurrentDeclaration(MemberDeclarationSyntax currentDeclaration, AttributeData[] attributes)
@@ -92,12 +96,6 @@ public sealed partial class CopyFromAnalyzer : DurianAnalyzer<CopyFromCompilatio
 			SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, compilation.CopyFromTypeAttribute);
 	}
 
-	/// <inheritdoc/>
-	protected override CopyFromCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
-	{
-		return new CopyFromCompilationData(compilation);
-	}
-
 	private static void AnalyzeAttributeSyntax(SyntaxNodeAnalysisContext context, CopyFromCompilationData compilation)
 	{
 		if (context.Node is not AttributeSyntax attr || attr.ArgumentList is null || attr.Parent?.Parent is not CSharpSyntaxNode member)
@@ -120,15 +118,15 @@ public sealed partial class CopyFromAnalyzer : DurianAnalyzer<CopyFromCompilatio
 			return;
 		}
 
-		if (SymbolEqualityComparer.Default.Equals(attributeSymbol.ContainingType, compilation.CopyFromTypeAttribute))
+		if (attributeSymbol.ContainingType.IsEquivalentTo(compilation.CopyFromTypeAttribute))
 		{
 			AnalyzeTypeAttribute(context, compilation, attr, member);
 		}
-		else if (SymbolEqualityComparer.Default.Equals(attributeSymbol.ContainingType, compilation.CopyFromMethodAttribute))
+		else if (attributeSymbol.ContainingType.IsEquivalentTo(compilation.CopyFromMethodAttribute))
 		{
 			AnalyzeMethodAttribute(context, compilation, member);
 		}
-		else if (SymbolEqualityComparer.Default.Equals(attributeSymbol.ContainingType, compilation.PatternAttribute))
+		else if (attributeSymbol.ContainingType.IsEquivalentTo(compilation.PatternAttribute))
 		{
 			AnalyzePatternAttribute(context, compilation, attr, member);
 		}

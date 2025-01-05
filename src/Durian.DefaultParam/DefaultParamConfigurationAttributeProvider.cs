@@ -56,48 +56,50 @@ public sealed class DefaultParamConfigurationAttributeProvider : SourceTextProvi
 	public override string GetText()
 	{
 		return
-$@"using System;
+$$"""
+using System;
 
 #nullable enable
 
-namespace {Namespace}
-{{
+namespace {{Namespace}}
+{
 	/// <summary>
-	/// Configures how members with the <see cref=""{DefaultParamAttributeProvider.TypeName}""/> are handled by the generator. Applies only to this member.
+	/// Configures how members with the <see cref="{{DefaultParamAttributeProvider.TypeName}}"/> are handled by the generator. Applies only to this member.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false, Inherited = false)]
-	public sealed class {TypeName} : Attribute
-	{{
+	public sealed class {{TypeName}} : Attribute
+	{
 		/// <summary>
-		/// Determines whether to apply the <see langword=""new""/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword=""true""/>.
+		/// Determines whether to apply the <see langword="new"/> modifier to the generated member when possible instead of reporting an error. Defaults to <see langword="true"/>.
 		/// </summary>
-		public bool {ApplyNewModifierWhenPossible} {{ get; set; }} = true;
+		public bool {{ApplyNewModifierWhenPossible}} { get; set; } = true;
 
 		/// <summary>
-		/// Determines, how the <c>DefaultParam</c> generator generates a method. The default value is <see cref=""{DPMethodConventionProvider.TypeName}.{DPMethodConventionProvider.Call}""/>.
+		/// Determines, how the <c>DefaultParam</c> generator generates a method. The default value is <see cref="{{DPMethodConventionProvider.TypeName}}.{{DPMethodConventionProvider.Call}}"/>.
 		/// </summary>
-		public {DPMethodConventionProvider.TypeName} {MethodConvention} {{ get; set; }}
+		public {{DPMethodConventionProvider.TypeName}} {{MethodConvention}} { get; set; }
 
 		/// <summary>
 		/// Specifies the namespace where the target member should be generated in.
 		/// </summary>
-		/// <remarks>Set this property to <c>global</c> to use the global namespace or to <see langword=""null""/> to use namespace of the original member.</remarks>
-		public string? {TargetNamespace} {{ get; set; }}
+		/// <remarks>Set this property to <c>global</c> to use the global namespace or to <see langword="null"/> to use namespace of the original member.</remarks>
+		public string? {{TargetNamespace}} { get; set; }
 
 		/// <summary>
-		/// Determines, how the <c>DefaultParam</c> generator generates a type. The default value is <see cref=""{DPTypeConventionProvider.TypeName}.{DPTypeConventionProvider.Inherit}""/>.
+		/// Determines, how the <c>DefaultParam</c> generator generates a type. The default value is <see cref="{{DPTypeConventionProvider.TypeName}}.{{DPTypeConventionProvider.Inherit}}"/>.
 		/// </summary>
-		public {DPTypeConventionProvider.TypeName} {TypeConvention} {{ get; set; }}
+		public {{DPTypeConventionProvider.TypeName}} {{TypeConvention}} { get; set; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref=""{TypeName}""/> class.
+		/// Initializes a new instance of the <see cref="{{TypeName}}"/> class.
 		/// </summary>
-		public {TypeName}()
-		{{
-		}}
-	}}
-}}
-";
+		public {{TypeName}}()
+		{
+		}
+	}
+}
+
+""";
 	}
 
 	/// <inheritdoc/>

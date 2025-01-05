@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.Data;

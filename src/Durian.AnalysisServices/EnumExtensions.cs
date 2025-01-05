@@ -6,7 +6,7 @@ using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Analysis.Extensions;
+namespace Durian.Analysis;
 
 /// <summary>
 /// Contains extension methods for various enum types.

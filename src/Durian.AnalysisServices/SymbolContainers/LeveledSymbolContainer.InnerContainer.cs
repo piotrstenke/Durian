@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis.SymbolContainers;

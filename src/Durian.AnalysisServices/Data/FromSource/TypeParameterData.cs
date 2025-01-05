@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 

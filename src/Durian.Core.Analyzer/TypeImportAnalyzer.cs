@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -34,7 +33,7 @@ public sealed class TypeImportAnalyzer : DurianAnalyzer<CompilationWithImportedT
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context, CompilationWithImportedTypes compilation)
+	protected override void Register(IDurianAnalysisContext context, CompilationWithImportedTypes compilation)
 	{
 		context.RegisterSyntaxNodeAction(c => Analyze(c, compilation), SyntaxKind.IdentifierName, SyntaxKind.GenericName);
 	}

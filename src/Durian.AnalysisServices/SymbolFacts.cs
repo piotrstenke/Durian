@@ -17,7 +17,7 @@ using System.Reflection;
 
 #endif
 
-namespace Durian.Analysis.Extensions;
+namespace Durian.Analysis;
 
 /// <summary>
 /// Contains methods that determine state and properties is a given <see cref="ISymbol"/>.
@@ -433,7 +433,7 @@ public static class SymbolFacts
 
 		while (current is not null)
 		{
-			if (SymbolEqualityComparer.Default.Equals(current, parent))
+			if (current.IsEquivalentTo(parent))
 			{
 				return true;
 			}
@@ -451,7 +451,7 @@ public static class SymbolFacts
 	/// <param name="typeParameter"><see cref="ITypeParameterSymbol"/> to check if is used by the target <paramref name="type"/>.</param>
 	public static bool HandlesTypeParameter(this ITypeSymbol type, ITypeParameterSymbol typeParameter)
 	{
-		if (SymbolEqualityComparer.Default.Equals(type, typeParameter))
+		if (type.IsEquivalentTo(typeParameter))
 		{
 			return true;
 		}
@@ -471,7 +471,7 @@ public static class SymbolFacts
 			return false;
 		}
 
-		if (SymbolEqualityComparer.Default.Equals(symbol, typeParameter))
+		if (symbol.IsEquivalentTo(typeParameter))
 		{
 			return true;
 		}
@@ -821,7 +821,7 @@ public static class SymbolFacts
 	/// <param name="other"><see cref="IMethodSymbol"/> to determine whether is explicitly implemented by the <paramref name="method"/>.</param>
 	public static bool ImplementsExplicitly(this IMethodSymbol method, IMethodSymbol other)
 	{
-		return method.ExplicitInterfaceImplementations.Any(ex => SymbolEqualityComparer.Default.Equals(ex, other));
+		return method.ExplicitInterfaceImplementations.Any(ex => ex.IsEquivalentTo(other));
 	}
 
 	/// <summary>
@@ -849,7 +849,7 @@ public static class SymbolFacts
 	/// <param name="other"><see cref="IPropertySymbol"/> to determine whether is explicitly implemented by the <paramref name="property"/>.</param>
 	public static bool ImplementsExplicitly(this IPropertySymbol property, IPropertySymbol other)
 	{
-		return property.ExplicitInterfaceImplementations.Any(ex => SymbolEqualityComparer.Default.Equals(ex, other));
+		return property.ExplicitInterfaceImplementations.Any(ex => ex.IsEquivalentTo(other));
 	}
 
 	/// <summary>
@@ -877,7 +877,7 @@ public static class SymbolFacts
 	/// <param name="other"><see cref="IEventSymbol"/> to determine whether is explicitly implemented by the <paramref name="event"/>.</param>
 	public static bool ImplementsExplicitly(this IEventSymbol @event, IEventSymbol other)
 	{
-		return @event.ExplicitInterfaceImplementations.Any(ex => SymbolEqualityComparer.Default.Equals(ex, other));
+		return @event.ExplicitInterfaceImplementations.Any(ex => ex.IsEquivalentTo(other));
 	}
 
 	/// <summary>
@@ -950,7 +950,7 @@ public static class SymbolFacts
 			return false;
 		}
 
-		return SymbolEqualityComparer.Default.Equals(method, m);
+		return method.IsEquivalentTo(m);
 	}
 
 	/// <summary>
@@ -987,7 +987,7 @@ public static class SymbolFacts
 			return false;
 		}
 
-		return SymbolEqualityComparer.Default.Equals(property, prop);
+		return property.IsEquivalentTo(prop);
 	}
 
 	/// <summary>
@@ -1053,7 +1053,7 @@ public static class SymbolFacts
 
 		while (current is not null)
 		{
-			if (SymbolEqualityComparer.Default.Equals(current, baseType))
+			if (current.IsEquivalentTo(baseType))
 			{
 				return true;
 			}
@@ -1750,6 +1750,88 @@ public static class SymbolFacts
 	}
 
 	/// <summary>
+	/// Determines whether the specified <paramref name="symbol"/> is an <see langword="interface"/>.
+	/// </summary>
+	/// <param name="symbol">Symbol to check.</param>
+	public static bool IsInterface(this ISymbol symbol)
+	{
+		return symbol is ITypeSymbol type && type.IsInterface();
+	}
+
+	/// <summary>
+	/// Determines whether the specified <paramref name="symbol"/> is an <see langword="interface"/>.
+	/// </summary>
+	/// <param name="symbol">Symbol to check.</param>
+	public static bool IsInterface(this ITypeSymbol symbol)
+	{
+		return symbol.TypeKind == TypeKind.Interface;
+	}
+
+	/// <summary>
+	/// Determines whether the specified <paramref name="symbol"/> is a <see langword="class"/>.
+	/// </summary>
+	/// <param name="symbol">Symbol to check.</param>
+	public static bool IsClass(this ISymbol symbol)
+	{
+		return symbol is ITypeSymbol type && type.IsClass();
+	}
+
+	/// <summary>
+	/// Determines whether the specified <paramref name="symbol"/> is a <see langword="class"/>.
+	/// </summary>
+	/// <param name="symbol">Symbol to check.</param>
+	public static bool IsClass(this ITypeSymbol symbol)
+	{
+		return symbol.TypeKind == TypeKind.Class;
+	}
+
+	/// <summary>
+	/// Determines whether the specified <paramref name="symbol"/> is a <see langword="static"/> <see langword="class"/>.
+	/// </summary>
+	/// <param name="symbol">Symbol to check.</param>
+	public static bool IsStaticClass(this ISymbol symbol)
+	{
+		return symbol is ITypeSymbol type && type.IsStaticClass();
+	}
+
+	/// <summary>
+	/// Determines whether the specified <paramref name="symbol"/> is a <see langword="static"/> <see langword="class"/>.
+	/// </summary>
+	/// <param name="symbol">Symbol to check.</param>
+	public static bool IsStaticClass(this ITypeSymbol symbol)
+	{
+		return symbol.IsClass() && symbol.IsStatic;
+	}
+
+	/// <summary>
+	/// Determines whether the specified <paramref name="symbol"/> is an <see langword="abstract"/> <see langword="class"/>.
+	/// </summary>
+	/// <param name="symbol">Symbol to check.</param>
+	public static bool IsAbstractClass(this ISymbol symbol)
+	{
+		return symbol is ITypeSymbol type && type.IsAbstractClass();
+	}
+
+	/// <summary>
+	/// Determines whether the specified <paramref name="symbol"/> is an <see langword="abstract"/> <see langword="class"/>.
+	/// </summary>
+	/// <param name="symbol">Symbol to check.</param>
+	public static bool IsAbstractClass(this ITypeSymbol symbol)
+	{
+		return symbol.IsClass() && symbol.IsAbstract;
+	}
+
+	/// <summary>
+	/// Determines whether the specified <see cref="ISymbol"/>s are equal according to <see cref="SymbolEqualityComparer.Default"/>.
+	/// </summary>
+	/// <param name="symbol"><see cref="ISymbol"/> to compare.</param>
+	/// <param name="other"><see cref="ISymbol"/> to compare.</param>
+	public static bool IsEquivalentTo(this ISymbol symbol, ISymbol? other)
+	{
+		return symbol.IsEquivalentTo(other);
+	}
+
+	/// <summary>
 	/// Determines whether the specified <paramref name="type"/> is a variant of the <paramref name="other"/> symbol.
 	/// </summary>
 	/// <param name="type"><see cref="INamedTypeSymbol"/> to determine whether is a variant of the <paramref name="other"/> symbol.</param>
@@ -1781,7 +1863,7 @@ public static class SymbolFacts
 			// type:  IA<in T>
 			// other: IA<in T>
 
-			if (SymbolEqualityComparer.Default.Equals(type, other))
+			if (type.IsEquivalentTo(other))
 			{
 				return true;
 			}
@@ -1823,7 +1905,7 @@ public static class SymbolFacts
 
 						default:
 
-							if (!SymbolEqualityComparer.Default.Equals(t, o))
+							if (!t.IsEquivalentTo(o))
 							{
 								return false;
 							}
@@ -2587,7 +2669,7 @@ public static class SymbolFacts
 	/// Determines whether the specified <paramref name="symbol"/> has the <see langword="readonly"/> modifier applied.
 	/// </summary>
 	/// <param name="symbol"><see cref="ISymbol"/> to determine whether has the <see langword="readonly"/> modifier applied.</param>
-	public static bool IsStructReadOnly(this ISymbol symbol)
+	public static bool IsReadOnly(this ISymbol symbol)
 	{
 		return symbol switch
 		{
@@ -2595,6 +2677,7 @@ public static class SymbolFacts
 			IPropertySymbol property => property.IsReadOnlyContext(),
 			IEventSymbol @event => @event.IsReadOnlyContext(),
 			IFieldSymbol field => field.IsReadOnly,
+			ITypeSymbol type => type.IsReadOnly,
 			_ => false
 		};
 	}
@@ -2792,7 +2875,7 @@ public static class SymbolFacts
 	/// <param name="other"><see cref="IMethodSymbol"/> to check if is overridden by the specified <paramref name="method"/>.</param>
 	public static bool Overrides(this IMethodSymbol method, IMethodSymbol other)
 	{
-		if (SymbolEqualityComparer.Default.Equals(method, other))
+		if (method.IsEquivalentTo(other))
 		{
 			return false;
 		}
@@ -2801,7 +2884,7 @@ public static class SymbolFacts
 
 		while (baseMethod is not null)
 		{
-			if (SymbolEqualityComparer.Default.Equals(other, baseMethod))
+			if (other.IsEquivalentTo(baseMethod))
 			{
 				return true;
 			}

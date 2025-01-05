@@ -288,7 +288,8 @@ $@"namespace Durian.Info
 
 		builder.Append(
 @"	}
-}");
+}
+");
 	}
 
 
@@ -359,7 +360,8 @@ $@"
 
 		builder.Append(
 @"	}
-}");
+}
+");
 	}
 
 	private static void WriteModuleRepository(StringBuilder builder, List<ModuleConfiguration> configurations)
@@ -389,7 +391,8 @@ $@"namespace Durian.Info
 
 		builder.AppendLine(
 $@"	}}
-}}");
+}}
+");
 	}
 
 	private static void WriteModuleIdentity(StringBuilder builder, ModuleConfiguration config)

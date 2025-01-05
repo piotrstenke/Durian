@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -60,7 +59,7 @@ public sealed class IsCSharpCompilationAnalyzer : DurianAnalyzer
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context)
+	protected override void Register(IDurianAnalysisContext context)
 	{
 		context.RegisterCompilationAction(Analyze);
 	}

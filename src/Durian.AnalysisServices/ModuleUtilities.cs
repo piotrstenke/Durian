@@ -7,7 +7,7 @@ using Durian.Generator;
 using Durian.Info;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Analysis.Extensions;
+namespace Durian.Analysis;
 
 /// <summary>
 /// Contains various <see cref="ModuleIdentity"/>-related extension methods for the <see cref="Compilation"/> class and <see cref="INamedTypeSymbol"/> interface.

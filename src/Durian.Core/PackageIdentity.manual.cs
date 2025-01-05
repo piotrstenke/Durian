@@ -27,6 +27,7 @@ public partial class PackageIdentity
 			DurianPackage.FriendClass => PackageRepository.FriendClass,
 			DurianPackage.InterfaceTargets => PackageRepository.InterfaceTargets,
 			DurianPackage.CopyFrom => PackageRepository.CopyFrom,
+			DurianPackage.GlobalScope => PackageRepository.GlobalScope,
 			_ => throw new InvalidOperationException($"Unknown {nameof(DurianPackage)} value: {package}!")
 		};
 	}
@@ -51,6 +52,7 @@ public partial class PackageIdentity
 			DurianPackage.FriendClass => PackageType.Analyzer | PackageType.StaticGenerator | PackageType.CodeFixLibrary,
 			DurianPackage.InterfaceTargets => PackageType.Analyzer | PackageType.StaticGenerator,
 			DurianPackage.CopyFrom => PackageType.Analyzer | PackageType.StaticGenerator | PackageType.SyntaxBasedGenerator | PackageType.CodeFixLibrary,
+			DurianPackage.GlobalScope => PackageType.Analyzer | PackageType.StaticGenerator | PackageType.SyntaxBasedGenerator,
 			_ => PackageType.Unspecified,
 		};
 	}
@@ -108,17 +110,20 @@ public partial class PackageIdentity
 					DurianPackage.DefaultParam or
 					DurianPackage.InterfaceTargets or
 					DurianPackage.FriendClass or
-					DurianPackage.CopyFrom,
+					DurianPackage.CopyFrom or
+					DurianPackage.GlobalScope,
 
 				PackageType.StaticGenerator => package is
 					DurianPackage.DefaultParam or
 					DurianPackage.InterfaceTargets or
 					DurianPackage.FriendClass or
-					DurianPackage.CopyFrom,
+					DurianPackage.CopyFrom or
+					DurianPackage.GlobalScope,
 
 				PackageType.SyntaxBasedGenerator => package is
 					DurianPackage.DefaultParam or
-					DurianPackage.CopyFrom,
+					DurianPackage.CopyFrom or
+					DurianPackage.GlobalScope,
 
 				//PackageType.FileBasedGenerator => package is
 
@@ -150,6 +155,7 @@ public partial class PackageIdentity
 			DurianPackage.FriendClass => PackageNames.FriendClass,
 			DurianPackage.InterfaceTargets => PackageNames.InterfaceTargets,
 			DurianPackage.CopyFrom => PackageNames.CopyFrom,
+			DurianPackage.GlobalScope => PackageNames.GlobalScope,
 			_ => null
 		};
 
@@ -224,6 +230,12 @@ public partial class PackageIdentity
 		if (name.Equals(PackageNames.CopyFrom, StringComparison.OrdinalIgnoreCase))
 		{
 			package = DurianPackage.CopyFrom;
+			return true;
+		}
+
+		if (name.Equals(PackageNames.GlobalScope, StringComparison.OrdinalIgnoreCase))
+		{
+			package = DurianPackage.GlobalScope;
 			return true;
 		}
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Text;
-using Durian.Analysis.Extensions;
 
 namespace Durian.Analysis.CodeGeneration;
 

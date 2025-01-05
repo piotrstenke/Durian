@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Durian.Analysis.Cache;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.Filtering;
 using Durian.Analysis.Logging;
 using Durian.Info;

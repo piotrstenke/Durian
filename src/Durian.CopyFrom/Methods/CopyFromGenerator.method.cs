@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using Durian.Analysis.CopyFrom.Methods;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

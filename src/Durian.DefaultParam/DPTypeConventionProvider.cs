@@ -51,30 +51,32 @@ public sealed class DPTypeConventionProvider : SourceTextProvider
 	public override string GetText()
 	{
 		return
-$@"namespace {Namespace}
-{{
+$$"""
+namespace {{Namespace}}
+{
 	/// <summary>
 	/// Determines how a <c>DefaultParam</c> type is generated.
 	/// </summary>
-	public enum {TypeName}
-	{{
+	public enum {{TypeName}}
+	{
 		/// <summary>
-		/// Uses default convention, which is <see cref=""{Inherit}""/>.
+		/// Uses default convention, which is <see cref="{{Inherit}}"/>.
 		/// </summary>
-		{Default} = {Inherit},
+		{{Default}} = {{Inherit}},
 
 		/// <summary>
 		/// Inherits from the type.
 		/// </summary>
-		{Inherit} = 0,
+		{{Inherit}} = 0,
 
 		/// <summary>
 		/// Copies contents of the type.
 		/// </summary>
-		{Copy} = 1
-	}}
-}}
-";
+		{{Copy}} = 1
+	}
+}
+
+""";
 	}
 
 	/// <inheritdoc/>

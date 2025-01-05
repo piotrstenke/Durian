@@ -13,7 +13,7 @@
 
 ##
 
-**CopyFrom allows to copy implementations of members to other members, without the need for inheritance. A regex pattern can be provided to customize the copied implementation.**
+**CopyFrom allows to copy implementations of members to other members, without the need for inheritance. A REGEX pattern can be provided to customize the copied implementation.**
 
 ## Table of Contents
 

@@ -2,7 +2,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -41,20 +40,20 @@ public class FriendClassDeclarationAnalyzer : DurianAnalyzer<FriendClassCompilat
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context, FriendClassCompilationData compilation)
+	protected override void Register(IDurianAnalysisContext context, FriendClassCompilationData compilation)
 	{
 		context.RegisterSymbolAction(context => Analyze(context, compilation), SymbolKind.NamedType);
-	}
-
-	internal static bool IsInternal(ISymbol symbol)
-	{
-		return symbol.DeclaredAccessibility is Accessibility.Internal or Accessibility.ProtectedOrInternal;
 	}
 
 	/// <inheritdoc/>
 	protected override FriendClassCompilationData CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver)
 	{
 		return new FriendClassCompilationData(compilation);
+	}
+
+	internal static bool IsInternal(ISymbol symbol)
+	{
+		return symbol.DeclaredAccessibility is Accessibility.Internal or Accessibility.ProtectedOrInternal;
 	}
 
 	private static void Analyze(SymbolAnalysisContext context, FriendClassCompilationData compilation)

@@ -20,6 +20,7 @@ public partial class ModuleIdentity
 			DurianModule.InterfaceTargets => ModuleRepository.InterfaceTargets,
 			DurianModule.Development => ModuleRepository.Development,
 			DurianModule.CopyFrom => ModuleRepository.CopyFrom,
+			DurianModule.GlobalScope => ModuleRepository.GlobalScope,
 			DurianModule.None => throw new ArgumentException($"{nameof(DurianModule)}.{nameof(DurianModule.None)} is not a valid Durian module!"),
 			_ => throw new ArgumentException($"Unknown {nameof(DurianModule)} value: {module}!")
 		};
@@ -40,6 +41,7 @@ public partial class ModuleIdentity
 			DurianModule.FriendClass => ModuleNames.FriendClass,
 			DurianModule.InterfaceTargets => ModuleNames.InterfaceTargets,
 			DurianModule.CopyFrom => ModuleNames.CopyFrom,
+			DurianModule.GlobalScope => ModuleNames.GlobalScope,
 			_ => null
 		};
 
@@ -94,6 +96,12 @@ public partial class ModuleIdentity
 		}
 
 		if (name.Equals(ModuleNames.CopyFrom, StringComparison.OrdinalIgnoreCase))
+		{
+			module = DurianModule.CopyFrom;
+			return true;
+		}
+
+		if (name.Equals(ModuleNames.GlobalScope, StringComparison.OrdinalIgnoreCase))
 		{
 			module = DurianModule.CopyFrom;
 			return true;

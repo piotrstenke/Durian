@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Durian.Generator;
 using Microsoft.CodeAnalysis;
@@ -54,10 +53,10 @@ public abstract class DefaultParamAnalyzer : DurianAnalyzer<DefaultParamCompilat
 		InitializeAttributes(ref attributes, symbol);
 		InitializeContainingTypes(ref containingTypes, symbol);
 
-		const string configPropertyName = DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible;
-		const string scopedPropertyName = DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible;
+		const string CONFIG_PROPERTY_NAME = DefaultParamConfigurationAttributeProvider.ApplyNewModifierWhenPossible;
+		const string SCOPED_PROPERTY_NAME = DefaultParamScopedConfigurationAttributeProvider.ApplyNewModifierWhenPossible;
 
-		if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, configPropertyName, out bool value))
+		if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, CONFIG_PROPERTY_NAME, out bool value))
 		{
 			return value;
 		}
@@ -71,7 +70,7 @@ public abstract class DefaultParamAnalyzer : DurianAnalyzer<DefaultParamCompilat
 
 				foreach (INamedTypeSymbol type in containingTypes.Reverse())
 				{
-					if (DefaultParamUtilities.TryGetConfigurationPropertyValue(type.GetAttributes(), scopedAttribute, scopedPropertyName, out value))
+					if (DefaultParamUtilities.TryGetConfigurationPropertyValue(type.GetAttributes(), scopedAttribute, SCOPED_PROPERTY_NAME, out value))
 					{
 						return value;
 					}
@@ -620,12 +619,12 @@ public abstract class DefaultParamAnalyzer : DurianAnalyzer<DefaultParamCompilat
 		ImmutableArray<INamedTypeSymbol> containingTypes = default
 	)
 	{
-		const string propertyName = DefaultParamConfigurationAttributeProvider.TargetNamespace;
+		const string PROPERTY_NAME = DefaultParamConfigurationAttributeProvider.TargetNamespace;
 
 		InitializeAttributes(ref attributes, symbol);
 		InitializeContainingTypes(ref containingTypes, symbol);
 
-		if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, propertyName, out string? value))
+		if (DefaultParamUtilities.TryGetConfigurationPropertyValue(attributes, compilation.DefaultParamConfigurationAttribute!, PROPERTY_NAME, out string? value))
 		{
 			return GetValueOrParentNamespace(value);
 		}
@@ -634,7 +633,7 @@ public abstract class DefaultParamAnalyzer : DurianAnalyzer<DefaultParamCompilat
 
 		foreach (INamedTypeSymbol type in containingTypes.Reverse())
 		{
-			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(type.GetAttributes(), scopedConfigurationAttribute, propertyName, out value))
+			if (DefaultParamUtilities.TryGetConfigurationPropertyValue(type.GetAttributes(), scopedConfigurationAttribute, PROPERTY_NAME, out value))
 			{
 				return GetValueOrParentNamespace(value);
 			}
@@ -716,7 +715,7 @@ public abstract class DefaultParamAnalyzer : DurianAnalyzer<DefaultParamCompilat
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
+	protected override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
 	{
 		context.RegisterSymbolAction(c => AnalyzeSymbol(c, compilation), SupportedSymbolKind);
 	}

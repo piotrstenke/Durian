@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Durian.FriendClass")]
 [assembly: InternalsVisibleTo("Durian.Core.Analyzer")]
 [assembly: InternalsVisibleTo("Durian.TestServices")]
+[assembly: InternalsVisibleTo("Durian.GlobalScope")]
 
 //
 // Original source: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -37,7 +36,7 @@ public sealed class DefaultParamScopedConfigurationAnalyzer : DurianAnalyzer<Def
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
+	protected override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
 	{
 		context.RegisterSyntaxNodeAction(c => Analyze(c, compilation), SyntaxKind.Attribute);
 	}
@@ -99,16 +98,16 @@ public sealed class DefaultParamScopedConfigurationAnalyzer : DurianAnalyzer<Def
 
 	private static Diagnostic? GetDiagnosticIfInvalidTargetNamespace(ISymbol symbol, AttributeSyntax node)
 	{
-		const string propertyName = DefaultParamConfigurationAttributeProvider.TargetNamespace;
+		const string PROPERTY_NAME = DefaultParamConfigurationAttributeProvider.TargetNamespace;
 
 		if (node.ArgumentList is null || !node.ArgumentList.Arguments.Any())
 		{
 			return null;
 		}
 
-		if (node.GetArgument(propertyName) is AttributeArgumentSyntax argument &&
+		if (node.GetArgument(PROPERTY_NAME) is AttributeArgumentSyntax argument &&
 			symbol.GetAttribute(node) is AttributeData data &&
-			data.TryGetNamedArgumentValue(propertyName, out string? value) &&
+			data.TryGetNamedArgumentValue(PROPERTY_NAME, out string? value) &&
 			!IsValidTargetNamespace(value))
 		{
 			Location? location = argument.GetLocation();

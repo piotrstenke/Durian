@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using static Durian.Analysis.DurianDiagnostics;
@@ -28,7 +27,7 @@ public sealed class PartialNameAnalyzer : DurianAnalyzer
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context)
+	protected override void Register(IDurianAnalysisContext context)
 	{
 		context.RegisterCompilationStartAction(context =>
 		{

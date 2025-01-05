@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.CopyFrom.Types;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SyntaxVisitors;
 using Microsoft.CodeAnalysis;

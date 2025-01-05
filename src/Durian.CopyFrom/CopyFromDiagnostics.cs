@@ -8,6 +8,7 @@ namespace Durian.Analysis.CopyFrom;
 /// </summary>
 public static class CopyFromDiagnostics
 {
+#pragma warning disable IDE1006 // Naming Styles
 	/// <summary>
 	/// Provides a diagnostic message indicating that a containing type of a member marked with the <c>Durian.CopyFromTypeAttribute</c> or <c>Durian.CopyFromMethodAttribute</c> must be <see langword="partial"/>.
 	/// </summary>
@@ -17,8 +18,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Containing type of a member with the CopyFromTypeAttribute or CopyFromMethodAttribute must be partial",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0201.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0201.md"
 	);
 
 	/// <summary>
@@ -30,8 +31,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Member marked with the CopyFromTypeAttribute or CopyFromMethodAttribute must be partial",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0202.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0202.md"
 	);
 
 	/// <summary>
@@ -43,8 +44,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Member '{1}' cannot be resolved",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0203.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0203.md"
 	);
 
 	/// <summary>
@@ -56,8 +57,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Member '{1}' is not compatible with the current member",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0204.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0204.md"
 	);
 
 	/// <summary>
@@ -69,8 +70,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Implementation of member '{1}' is not accessible",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0205.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0205.md"
 	);
 
 	/// <summary>
@@ -82,8 +83,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Equivalent CopyFromTypeAttribute already specified",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0206.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0206.md"
 	);
 
 	/// <summary>
@@ -95,8 +96,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Member cannot copy from itself or its parent, child or outer type",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0207.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0207.md"
 	);
 
 	/// <summary>
@@ -108,8 +109,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Two or more members with name '{1}' were resolved",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0208.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0208.md"
 	);
 
 	/// <summary>
@@ -121,8 +122,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Cannot copy from a method without implementation",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0209.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0209.md"
 	);
 
 	/// <summary>
@@ -134,8 +135,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': CopyFromMethodAttribute is not valid on this kind of method",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0210.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0210.md"
 	);
 
 	/// <summary>
@@ -147,8 +148,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Method marked with the CopyFromMethodAttribute already has a declaration",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0211.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0211.md"
 	);
 
 	/// <summary>
@@ -160,8 +161,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Target member '{1}' does not have a return type",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0212.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0212.md"
 	);
 
 	/// <summary>
@@ -173,8 +174,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Target member cannot have a return type",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0213.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0213.md"
 	);
 
 	/// <summary>
@@ -186,8 +187,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Invalid PatternAttribute specified",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0214.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0214.md"
 	);
 
 	/// <summary>
@@ -199,8 +200,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': PatternAttribute is redundant",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0215.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0215.md"
 	);
 
 	/// <summary>
@@ -212,8 +213,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': PatternAttribute with equivalent pattern already specified",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0216.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0216.md"
 	);
 
 	/// <summary>
@@ -225,8 +226,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Type '{1}' is not a valid type argument",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0217.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0217.md"
 	);
 
 	/// <summary>
@@ -238,8 +239,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Unknown partial part '{1}' of type '{2}'",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0218.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0218.md"
 	);
 
 	/// <summary>
@@ -251,8 +252,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': PatternAttribute should be applied on the same partial declaration as a CopyFromTypeAttribute",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0219.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0219.md"
 	);
 
 	/// <summary>
@@ -264,8 +265,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Namespace '{1}' already specified for the AddUsings property",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0220.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0220.md"
 	);
 
 	/// <summary>
@@ -277,8 +278,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Circular dependency between target members",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Error,
-		helpLinkUri: DocsPath + "/DUR0221.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0221.md"
 	);
 
 	/// <summary>
@@ -290,8 +291,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Member already has documentation",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0222.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0222.md"
 	);
 
 	/// <summary>
@@ -303,8 +304,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Member already has generic constraints",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0223.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0223.md"
 	);
 
 	/// <summary>
@@ -316,8 +317,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Cannot copy constraints for a method or a non-generic member",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0224.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0224.md"
 	);
 
 	/// <summary>
@@ -329,8 +330,8 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Type already has a base type",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0225.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0225.md"
 	);
 
 	/// <summary>
@@ -342,9 +343,10 @@ public static class CopyFromDiagnostics
 		messageFormat: "'{0}': Base type cannot be applied to this kind of member",
 		category: "Durian.CopyFrom",
 		defaultSeverity: DiagnosticSeverity.Warning,
-		helpLinkUri: DocsPath + "/DUR0226.md",
-		isEnabledByDefault: true
+		isEnabledByDefault: true,
+		helpLinkUri: DocsPath + "/DUR0226.md"
 	);
+#pragma warning restore IDE1006 // Naming Styles
 
 	/// <summary>
 	/// Documentation directory of the <c>DefaultParam</c> module.

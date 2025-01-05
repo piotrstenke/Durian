@@ -6,7 +6,7 @@ using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Durian.Analysis.Extensions;
+namespace Durian.Analysis;
 
 /// <summary>
 /// Contains various extension methods for the <see cref="IMemberData"/> interface.

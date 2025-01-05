@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -34,7 +33,7 @@ public class FriendClassAccessAnalyzer : DurianAnalyzer<FriendClassCompilationDa
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context, FriendClassCompilationData compilation)
+	protected override void Register(IDurianAnalysisContext context, FriendClassCompilationData compilation)
 	{
 		context.RegisterSyntaxNodeAction(context => AnalyzeIndentifierName(context, compilation),
 			SyntaxKind.IdentifierName,
@@ -170,9 +169,7 @@ public class FriendClassAccessAnalyzer : DurianAnalyzer<FriendClassCompilationDa
 			{
 				if (record.BaseList is not null && record.BaseList.Types.Any())
 				{
-					BaseTypeSyntax baseType = record.BaseList.Types[0];
-
-					switch (baseType)
+					switch (record.BaseList.Types[0])
 					{
 						case PrimaryConstructorBaseTypeSyntax primary:
 							SymbolInfo info = semanticModel.GetSymbolInfo(primary);

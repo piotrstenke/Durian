@@ -91,7 +91,7 @@ public sealed class DependencyAnalyzer : DurianAnalyzer
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context)
+	protected override void Register(IDurianAnalysisContext context)
 	{
 		context.RegisterCompilationAction(Analyze);
 	}

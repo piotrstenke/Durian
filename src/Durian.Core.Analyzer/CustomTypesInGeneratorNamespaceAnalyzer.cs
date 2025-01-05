@@ -26,7 +26,7 @@ public sealed class CustomTypesInGeneratorNamespaceAnalyzer : DurianAnalyzer
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context)
+	protected override void Register(IDurianAnalysisContext context)
 	{
 		context.RegisterSyntaxNodeAction(Analyze, SyntaxKind.NamespaceDeclaration);
 	}

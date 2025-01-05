@@ -1,4 +1,4 @@
-﻿namespace Durian.Analysis.GlobalFunction;
+﻿namespace Durian.Analysis.GlobalScope;
 
 /// <summary>
 /// <see cref="ISourceTextProvider"/> that creates syntax tree of the <c>Durian.GlobalScopeAttribute</c> class.

@@ -34,4 +34,9 @@ public static class ModuleNames
 	/// Name of the <see cref="DurianModule.CopyFrom"/> module.
 	/// </summary>
 	public const string CopyFrom = nameof(DurianModule.CopyFrom);
+
+	/// <summary>
+	/// Name of the <see cref="DurianModule.GlobalScope"/> module.
+	/// </summary>
+	public const string GlobalScope = nameof(DurianModule.GlobalScope);
 }

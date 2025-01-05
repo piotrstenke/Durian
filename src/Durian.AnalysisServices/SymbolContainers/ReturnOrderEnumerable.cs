@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Durian.Analysis.Extensions;
 
 namespace Durian.Analysis.SymbolContainers;
 

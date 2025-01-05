@@ -44,6 +44,7 @@
     <DocumentationFile>$(BaseIntermediateOutputPath)$(MSBuildProjectName).xml</DocumentationFile>
     <DebugType>portable</DebugType>
     <Deterministic>true</Deterministic>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
 
   </PropertyGroup>
 
@@ -56,6 +57,7 @@
   <ItemGroup Condition="$(MsBuildProjectDirectoryNoRoot.Contains('src'))">
     
     <None Include="..\..\img\icons\Durian-pkg-icon-128.png" Pack="true" Visible="false" PackagePath="" />
+    <None Include="Readme.md" Pack="true" PackagePath=""/>
   
   </ItemGroup>
 

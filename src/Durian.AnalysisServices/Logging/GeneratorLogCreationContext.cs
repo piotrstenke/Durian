@@ -30,7 +30,7 @@ public readonly struct GeneratorLogCreationContext : IEquatable<GeneratorLogCrea
 	public static GeneratorLogCreationContext Runtime => new();
 
 	/// <summary>
-	/// Determines whether to try to create a <see cref="Logging.LoggingConfiguration"/> based on one of the <see cref="LoggingConfigurationAttribute"/>.
+	/// Determines whether to try to create a <see cref="LoggingConfiguration"/> based on one of the <see cref="LoggingConfigurationAttribute"/>.
 	/// </summary>
 	public bool CheckForConfigurationAttribute { get; }
 

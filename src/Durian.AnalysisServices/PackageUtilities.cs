@@ -4,7 +4,7 @@ using Durian.Info;
 using Microsoft.CodeAnalysis;
 using static Durian.Info.PackageIdentity;
 
-namespace Durian.Analysis.Extensions;
+namespace Durian.Analysis;
 
 /// <summary>
 /// Contains various <see cref="PackageIdentity"/>-related extension methods for the <see cref="Compilation"/> class.

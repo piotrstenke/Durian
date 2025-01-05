@@ -51,30 +51,32 @@ public sealed class DPMethodConventionProvider : SourceTextProvider
 	public override string GetText()
 	{
 		return
-$@"namespace {Namespace}
-{{
+$$"""
+namespace {{Namespace}}
+{
 	/// <summary>
 	/// Determines how a <c>DefaultParam</c> method is generated.
 	/// </summary>
-	public enum {TypeName}
-	{{
+	public enum {{TypeName}}
+	{
 		/// <summary>
-		/// Uses default convention, which is <see cref=""{Call}""/>.
+		/// Uses default convention, which is <see cref="{{Call}}"/>.
 		/// </summary>
-		{Default} = {Call},
+		{{Default}} = {{Call}},
 
 		/// <summary>
 		/// Calls the method.
 		/// </summary>
-		{Call} = 0,
+		{{Call}} = 0,
 
 		/// <summary>
 		/// Copies contents of the method.
 		/// </summary>
-		{Copy} = 1
-	}}
-}}
-";
+		{{Copy}} = 1
+	}
+}
+
+""";
 	}
 
 	/// <inheritdoc/>

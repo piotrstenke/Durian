@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Durian.Analysis.CodeGeneration;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.Analysis;

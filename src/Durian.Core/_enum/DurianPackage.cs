@@ -54,4 +54,9 @@ public enum DurianPackage
 	/// Represents the <c>Durian.CopyFrom</c> package.
 	/// </summary>
 	CopyFrom,
+
+	/// <summary>
+	/// Represents the <c>Durian.GlobalScope</c> package.
+	/// </summary>
+	GlobalScope,
 }

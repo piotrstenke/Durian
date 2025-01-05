@@ -190,6 +190,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Durian.Samples.CopyFrom", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Durian.GlobalScope", "src\Durian.GlobalScope\Durian.GlobalScope.csproj", "{643FFE0C-B641-4504-8F6A-0EA694F3DEF7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GlobalScope", "GlobalScope", "{A04BF577-5DEB-477A-A22C-3557852AC25B}"
+	ProjectSection(SolutionItems) = preProject
+		docs\GlobalScope\DUR0501.md = docs\GlobalScope\DUR0501.md
+		docs\GlobalScope\DUR0502.md = docs\GlobalScope\DUR0502.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -485,6 +491,7 @@ Global
 		{072AEE81-1199-4446-B2D5-54384D23DAE0} = {BA3DE2E2-7B32-4612-8219-24FBCF850813}
 		{9C383ACD-8C9E-4C24-B2EA-4326C7553866} = {D98DD137-AADE-4474-86EF-9F0874607687}
 		{643FFE0C-B641-4504-8F6A-0EA694F3DEF7} = {74D7ECF9-D1F6-46FA-B8D8-D34F86F713EA}
+		{A04BF577-5DEB-477A-A22C-3557852AC25B} = {BA3DE2E2-7B32-4612-8219-24FBCF850813}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {09524C45-0D6D-4456-B89D-9673853B9FA0}

@@ -1,5 +1,6 @@
-﻿using System.Text;
-using System.Threading;
+﻿using System;
+using System.Text;
+using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -11,6 +12,38 @@ namespace Durian.Analysis;
 /// </summary>
 public abstract class DurianIncrementalGenerator : DurianGeneratorBase, IIncrementalGenerator
 {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DurianIncrementalGenerator"/> class.
+	/// </summary>
+	protected DurianIncrementalGenerator()
+	{
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DurianIncrementalGenerator"/> class.
+	/// </summary>
+	/// <param name="logHandler">Service that handles log files for this generator.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="logHandler"/> is <see langword="null"/>.</exception>
+	protected DurianIncrementalGenerator(IGeneratorLogHandler logHandler) : base(logHandler)
+	{
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DurianIncrementalGenerator"/> class.
+	/// </summary>
+	/// <param name="context">Configures how this generator is initialized.</param>
+	protected DurianIncrementalGenerator(in GeneratorLogCreationContext context) : base(in context)
+	{
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="DurianIncrementalGenerator"/> class.
+	/// </summary>
+	/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
+	protected DurianIncrementalGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
+	{
+	}
+
 	/// <inheritdoc/>
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -24,14 +57,15 @@ public abstract class DurianIncrementalGenerator : DurianGeneratorBase, IIncreme
 			return compilation;
 		}, context.ReportDiagnostic));
 
-		Register(context);
+		Register(compilation, context);
 	}
 
 	/// <summary>
 	/// Adds generator-specific logic to the <paramref name="context"/>.
 	/// </summary>
+	/// <param name="compilation">Current compilation.</param>
 	/// <param name="context">The <see cref="IncrementalGeneratorInitializationContext"/> to register callbacks on</param>
-	protected abstract void Register(IncrementalGeneratorInitializationContext context);
+	protected abstract void Register(IncrementalValueProvider<Compilation> compilation, IncrementalGeneratorInitializationContext context);
 
 	/// <summary>
 	/// Adds the specified <paramref name="source"/> to the <paramref name="context"/>.

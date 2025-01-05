@@ -41,32 +41,34 @@ public sealed class DefaultParamAttributeProvider : SourceTextProvider
 	public override string GetText()
 	{
 		return
-$@"using System;
+$$"""
+using System;
 
-namespace {Namespace}
-{{
+namespace {{Namespace}}
+{
 	/// <summary>
 	/// Applies a default type for the generic parameter.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.GenericParameter, AllowMultiple = false, Inherited = true)]
-	public sealed class {TypeName} : Attribute
-	{{
+	public sealed class {{TypeName}} : Attribute
+	{
 		/// <summary>
 		/// Type that is used as the default type for this generic parameter.
 		/// </summary>
-		public Type {Type} {{ get; }}
+		public Type {{Type}} { get; }
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref=""{TypeName}""/> class.
+		/// Initializes a new instance of the <see cref="{{TypeName}}"/> class.
 		/// </summary>
-		/// <param name=""type"">Type that is used as the default type for this generic parameter.</param>
-		public {TypeName}(Type type)
-		{{
-			{Type} = type;
-		}}
-	}}
-}}
-";
+		/// <param name="type">Type that is used as the default type for this generic parameter.</param>
+		public {{TypeName}}(Type type)
+		{
+			{{Type}} = type;
+		}
+	}
+}
+
+""";
 	}
 
 	/// <inheritdoc/>

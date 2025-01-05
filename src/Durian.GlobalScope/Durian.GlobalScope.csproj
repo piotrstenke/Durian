@@ -3,8 +3,8 @@
   <PropertyGroup>
 
 	<TargetFramework>netstandard2.0</TargetFramework>
-	<Description>GlobalFunction provides support for top-level (global) functions and fields - outside of types.</Description>
-	<PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Friend;Type;Class</PackageTags>
+	<Description>GlobalScope provides support for top-level (global) access of type members, outside of the type hierarchy.</Description>
+	<PackageTags>Durian;Analyzer;Source;Generator;Generation;Roslyn;Code;Fix;Extension;Feature;CSharp;C#;Analysis;Syntax;Tree;Node;Type;Class;Global;Scope</PackageTags>
 	<PackageVersion>1.0.0</PackageVersion>
 	<AssemblyVersion>1.0.0</AssemblyVersion>
 	<Version>1.0.0</Version>

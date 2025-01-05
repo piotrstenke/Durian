@@ -49,4 +49,9 @@ public static class PackageNames
 	/// Name of the <see cref="DurianPackage.CopyFrom"/> package.
 	/// </summary>
 	public const string CopyFrom = nameof(DurianPackage.CopyFrom);
+
+	/// <summary>
+	/// Name of the <see cref="DurianPackage.GlobalScope"/> package.
+	/// </summary>
+	public const string GlobalScope = nameof(DurianPackage.GlobalScope);
 }

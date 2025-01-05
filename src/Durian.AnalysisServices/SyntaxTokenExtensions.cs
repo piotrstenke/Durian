@@ -4,7 +4,7 @@ using Durian.Analysis.CodeGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Durian.Analysis.Extensions;
+namespace Durian.Analysis;
 
 /// <summary>
 /// Contains extension methods for the <see cref="SyntaxToken"/> and <see cref="SyntaxTokenList"/> structs.

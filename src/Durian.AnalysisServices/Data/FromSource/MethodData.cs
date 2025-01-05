@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Linq;
 using Durian.Analysis.CodeGeneration;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Durian.Analysis.SymbolContainers.Specialized;
 using Microsoft.CodeAnalysis;

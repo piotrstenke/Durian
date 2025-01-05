@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Data;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

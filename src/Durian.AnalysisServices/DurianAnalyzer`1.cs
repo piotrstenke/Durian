@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -53,7 +54,8 @@ public abstract class DurianAnalyzer<TCompilation> : DurianAnalyzer where TCompi
 
 	/// <inheritdoc/>
 	[Obsolete("Implementation of this method was removed - use Register(IDurianAnalysisContext, TCompilation) instead.")]
-	public sealed override void Register(IDurianAnalysisContext context)
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	protected sealed override void Register(IDurianAnalysisContext context)
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 	{
 		// Do nothing
@@ -64,14 +66,7 @@ public abstract class DurianAnalyzer<TCompilation> : DurianAnalyzer where TCompi
 	/// </summary>
 	/// <param name="context"><see cref="IDurianAnalysisContext"/> to register the actions to.</param>
 	/// <param name="compilation"><see cref="ICompilationData"/> to be used during the analysis.</param>
-	public abstract void Register(IDurianAnalysisContext context, TCompilation compilation);
-
-	/// <summary>
-	/// Creates a new <see cref="ICompilationData"/> based on the specified <paramref name="compilation"/>.
-	/// </summary>
-	/// <param name="compilation"><see cref="CSharpCompilation"/> to create the <see cref="ICompilationData"/> from.</param>
-	/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to report diagnostics to.</param>
-	protected abstract TCompilation CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver);
+	protected abstract void Register(IDurianAnalysisContext context, TCompilation compilation);
 
 	/// <inheritdoc/>
 	protected sealed override void Register(IDurianAnalysisContext context, CSharpCompilation compilation)
@@ -86,6 +81,13 @@ public abstract class DurianAnalyzer<TCompilation> : DurianAnalyzer where TCompi
 
 		ReportInitializationDiagnostics(context, diagnosticReceiver);
 	}
+
+	/// <summary>
+	/// Creates a new <see cref="ICompilationData"/> based on the specified <paramref name="compilation"/>.
+	/// </summary>
+	/// <param name="compilation"><see cref="CSharpCompilation"/> to create the <see cref="ICompilationData"/> from.</param>
+	/// <param name="diagnosticReceiver"><see cref="IDiagnosticReceiver"/> to report diagnostics to.</param>
+	protected abstract TCompilation CreateCompilation(CSharpCompilation compilation, IDiagnosticReceiver diagnosticReceiver);
 
 	private static void ReportInitializationDiagnostics(IDurianAnalysisContext context, DiagnosticBag diagnosticReceiver)
 	{

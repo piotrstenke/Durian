@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Durian.Analysis.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -37,7 +36,7 @@ public sealed class DefaultParamConfigurationAnalyzer : DurianAnalyzer<DefaultPa
 	}
 
 	/// <inheritdoc/>
-	public override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
+	protected override void Register(IDurianAnalysisContext context, DefaultParamCompilationData compilation)
 	{
 		context.RegisterSyntaxNodeAction(c => Analyze(c, compilation), SyntaxKind.Attribute);
 	}

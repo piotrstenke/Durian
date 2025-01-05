@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using Durian.Analysis.Data;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,17 +23,6 @@ public abstract class CachedAnalyzer<TTarget, TCompilation> : DurianAnalyzer<TCo
 	{
 	}
 
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-
-	/// <inheritdoc/>
-	[Obsolete("This method shouldn't be used directly - use Register(IDurianAnalysisContext, TCompilation, ConcurrentDictionary<FileLinePositionSpan, TTarget>) instead.")]
-	public sealed override void Register(IDurianAnalysisContext context, TCompilation compilation)
-#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
-	{
-		ConcurrentDictionary<FileLinePositionSpan, TTarget> dict = new();
-		Register(context, compilation, dict);
-	}
-
 	/// <summary>
 	/// Registers actions to be performed by the analyzer and caches the result of analysis.
 	/// </summary>
@@ -40,6 +30,18 @@ public abstract class CachedAnalyzer<TTarget, TCompilation> : DurianAnalyzer<TCo
 	/// <param name="compilation">Compilation to be used during the analysis.</param>
 	/// <param name="cached">A <see cref="ConcurrentDictionary{TKey, TValue}"/> that contains the cached values.</param>
 	public abstract void Register(IDurianAnalysisContext context, TCompilation compilation, ConcurrentDictionary<FileLinePositionSpan, TTarget> cached);
+
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+
+	/// <inheritdoc/>
+	[Obsolete("This method shouldn't be used directly - use Register(IDurianAnalysisContext, TCompilation, ConcurrentDictionary<FileLinePositionSpan, TTarget>) instead.")]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	protected sealed override void Register(IDurianAnalysisContext context, TCompilation compilation)
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+	{
+		ConcurrentDictionary<FileLinePositionSpan, TTarget> dict = new();
+		Register(context, compilation, dict);
+	}
 
 	void ICachedAnalyzer<TTarget>.Register(IDurianAnalysisContext context, CSharpCompilation compilation, ConcurrentDictionary<FileLinePositionSpan, TTarget> cached)
 	{

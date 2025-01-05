@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.ComponentModel;
-using Durian.Analysis.Extensions;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

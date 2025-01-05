@@ -9,402 +9,426 @@
 
 using System;
 
-namespace Durian.Info;
-
-/// <summary>
-/// Factory class of <see cref="TypeIdentity"/>s for all available Durian <see cref="Type"/>s.
-/// </summary>
-public static class TypeRepository
+namespace Durian.Info
 {
 	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Generator.EnableModuleAttribute</c> type.
+	/// Factory class of <see cref="TypeIdentity"/>s for all available Durian <see cref="Type"/>s.
 	/// </summary>
-	public static TypeIdentity EnableModuleAttribute
+	public static class TypeRepository
 	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Generator.EnableModuleAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity EnableModuleAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("EnableModuleAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "EnableModuleAttribute",
-					@namespace: "Durian.Generator",
-					modules: new DurianModule[]
-					{
-						DurianModule.Core,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("EnableModuleAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "EnableModuleAttribute",
+						@namespace: "Durian.Generator",
+						modules: new DurianModule[]
+						{
+							DurianModule.Core,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Generator.DurianGeneratedAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity DurianGeneratedAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Generator.DurianGeneratedAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity DurianGeneratedAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("DurianGeneratedAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "DurianGeneratedAttribute",
-					@namespace: "Durian.Generator",
-					modules: new DurianModule[]
-					{
-						DurianModule.Core,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("DurianGeneratedAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "DurianGeneratedAttribute",
+						@namespace: "Durian.Generator",
+						modules: new DurianModule[]
+						{
+							DurianModule.Core,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.PartialNameAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity PartialNameAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.PartialNameAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity PartialNameAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("PartialNameAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "PartialNameAttribute",
-					@namespace: "Durian",
-					modules: new DurianModule[]
-					{
-						DurianModule.Core,
-						DurianModule.CopyFrom,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("PartialNameAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "PartialNameAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.Core,
+							DurianModule.CopyFrom,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.UsingsAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity UsingsAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.UsingsAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity UsingsAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("UsingsAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "UsingsAttribute",
-					@namespace: "Durian",
-					modules: new DurianModule[]
-					{
-						DurianModule.Core,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("UsingsAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "UsingsAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.Core,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.DefaultParamAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity DefaultParamAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.DefaultParamAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity DefaultParamAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("DefaultParamAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "DefaultParamAttribute",
-					@namespace: "Durian",
-					modules: new DurianModule[]
-					{
-						DurianModule.DefaultParam,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("DefaultParamAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "DefaultParamAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.DefaultParam,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity DefaultParamConfigurationAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.DefaultParamConfigurationAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity DefaultParamConfigurationAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("DefaultParamConfigurationAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "DefaultParamConfigurationAttribute",
-					@namespace: "Durian.Configuration",
-					modules: new DurianModule[]
-					{
-						DurianModule.DefaultParam,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("DefaultParamConfigurationAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "DefaultParamConfigurationAttribute",
+						@namespace: "Durian.Configuration",
+						modules: new DurianModule[]
+						{
+							DurianModule.DefaultParam,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity DefaultParamScopedConfigurationAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.DefaultParamScopedConfigurationAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity DefaultParamScopedConfigurationAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("DefaultParamScopedConfigurationAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "DefaultParamScopedConfigurationAttribute",
-					@namespace: "Durian.Configuration",
-					modules: new DurianModule[]
-					{
-						DurianModule.DefaultParam,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("DefaultParamScopedConfigurationAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "DefaultParamScopedConfigurationAttribute",
+						@namespace: "Durian.Configuration",
+						modules: new DurianModule[]
+						{
+							DurianModule.DefaultParam,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.DPMethodConvention</c> type.
-	/// </summary>
-	public static TypeIdentity DPMethodConvention
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.DPMethodConvention</c> type.
+		/// </summary>
+		public static TypeIdentity DPMethodConvention
 		{
-			if(!IdentityPool.Types.TryGetValue("DPMethodConvention", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "DPMethodConvention",
-					@namespace: "Durian.Configuration",
-					modules: new DurianModule[]
-					{
-						DurianModule.DefaultParam,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("DPMethodConvention", out TypeIdentity type))
+				{
+					type = new(
+						name: "DPMethodConvention",
+						@namespace: "Durian.Configuration",
+						modules: new DurianModule[]
+						{
+							DurianModule.DefaultParam,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.DPTypeConvention</c> type.
-	/// </summary>
-	public static TypeIdentity DPTypeConvention
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.DPTypeConvention</c> type.
+		/// </summary>
+		public static TypeIdentity DPTypeConvention
 		{
-			if(!IdentityPool.Types.TryGetValue("DPTypeConvention", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "DPTypeConvention",
-					@namespace: "Durian.Configuration",
-					modules: new DurianModule[]
-					{
-						DurianModule.DefaultParam,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("DPTypeConvention", out TypeIdentity type))
+				{
+					type = new(
+						name: "DPTypeConvention",
+						@namespace: "Durian.Configuration",
+						modules: new DurianModule[]
+						{
+							DurianModule.DefaultParam,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.FriendClassAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity FriendClassAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.FriendClassAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity FriendClassAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("FriendClassAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "FriendClassAttribute",
-					@namespace: "Durian",
-					modules: new DurianModule[]
-					{
-						DurianModule.FriendClass,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("FriendClassAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "FriendClassAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.FriendClass,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.FriendClassConfigurationAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity FriendClassConfigurationAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.FriendClassConfigurationAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity FriendClassConfigurationAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("FriendClassConfigurationAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "FriendClassConfigurationAttribute",
-					@namespace: "Durian.Configuration",
-					modules: new DurianModule[]
-					{
-						DurianModule.FriendClass,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("FriendClassConfigurationAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "FriendClassConfigurationAttribute",
+						@namespace: "Durian.Configuration",
+						modules: new DurianModule[]
+						{
+							DurianModule.FriendClass,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.InterfaceTargets</c> type.
-	/// </summary>
-	public static TypeIdentity InterfaceTargets
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.InterfaceTargets</c> type.
+		/// </summary>
+		public static TypeIdentity InterfaceTargets
 		{
-			if(!IdentityPool.Types.TryGetValue("InterfaceTargets", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "InterfaceTargets",
-					@namespace: "Durian",
-					modules: new DurianModule[]
-					{
-						DurianModule.InterfaceTargets,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("InterfaceTargets", out TypeIdentity type))
+				{
+					type = new(
+						name: "InterfaceTargets",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.InterfaceTargets,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.InterfaceTargetsAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity InterfaceTargetsAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.InterfaceTargetsAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity InterfaceTargetsAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("InterfaceTargetsAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "InterfaceTargetsAttribute",
-					@namespace: "Durian",
-					modules: new DurianModule[]
-					{
-						DurianModule.InterfaceTargets,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("InterfaceTargetsAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "InterfaceTargetsAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.InterfaceTargets,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.CopyFromTypeAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity CopyFromTypeAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.CopyFromTypeAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity CopyFromTypeAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("CopyFromTypeAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "CopyFromTypeAttribute",
-					@namespace: "Durian",
-					modules: new DurianModule[]
-					{
-						DurianModule.CopyFrom,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("CopyFromTypeAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "CopyFromTypeAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.CopyFrom,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.CopyFromMethodAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity CopyFromMethodAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.CopyFromMethodAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity CopyFromMethodAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("CopyFromMethodAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "CopyFromMethodAttribute",
-					@namespace: "Durian",
-					modules: new DurianModule[]
-					{
-						DurianModule.CopyFrom,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("CopyFromMethodAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "CopyFromMethodAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.CopyFrom,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.CopyFromAdditionalNodes</c> type.
-	/// </summary>
-	public static TypeIdentity CopyFromAdditionalNodes
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.Configuration.CopyFromAdditionalNodes</c> type.
+		/// </summary>
+		public static TypeIdentity CopyFromAdditionalNodes
 		{
-			if(!IdentityPool.Types.TryGetValue("CopyFromAdditionalNodes", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "CopyFromAdditionalNodes",
-					@namespace: "Durian.Configuration",
-					modules: new DurianModule[]
-					{
-						DurianModule.CopyFrom,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("CopyFromAdditionalNodes", out TypeIdentity type))
+				{
+					type = new(
+						name: "CopyFromAdditionalNodes",
+						@namespace: "Durian.Configuration",
+						modules: new DurianModule[]
+						{
+							DurianModule.CopyFrom,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
 		}
-	}
 
-	/// <summary>
-	/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.PatternAttribute</c> type.
-	/// </summary>
-	public static TypeIdentity PatternAttribute
-	{
-		get
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.PatternAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity PatternAttribute
 		{
-			if(!IdentityPool.Types.TryGetValue("PatternAttribute", out TypeIdentity type))
+			get
 			{
-				type = new(
-					name: "PatternAttribute",
-					@namespace: "Durian",
-					modules: new DurianModule[]
-					{
-						DurianModule.CopyFrom,
-					}
-				);
-			}
+				if(!IdentityPool.Types.TryGetValue("PatternAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "PatternAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.CopyFrom,
+						}
+					);
+				}
 
-			return type;
+				return type;
+			}
+		}
+
+		/// <summary>
+		/// Returns a <see cref="TypeIdentity"/> for the <c>Durian.GlobalScopeAttribute</c> type.
+		/// </summary>
+		public static TypeIdentity GlobalScopeAttribute
+		{
+			get
+			{
+				if(!IdentityPool.Types.TryGetValue("GlobalScopeAttribute", out TypeIdentity type))
+				{
+					type = new(
+						name: "GlobalScopeAttribute",
+						@namespace: "Durian",
+						modules: new DurianModule[]
+						{
+							DurianModule.GlobalScope,
+						}
+					);
+				}
+
+				return type;
+			}
 		}
 	}
 }

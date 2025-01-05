@@ -5,7 +5,7 @@ Rule ID | Category | Severity | Notes
 --------|----------|----------|-----------------------------------------
 DUR0201 | Durian.CopyFrom | Error |  Containing type of a member with the CopyFromTypeAttribute or CopyFromMethodAttribute must be partial. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0201.md)]
 DUR0202 | Durian.CopyFrom | Error |  Member marked with the CopyFromTypeAttribute or CopyFromMethodAttribute must be partial. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0202.md)]
-DUR0203 | Durian.CopyFrom | Error |  Target member cannot be resolved. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0204.md)]
+DUR0203 | Durian.CopyFrom | Error |  Target member cannot be resolved. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0203.md)]
 DUR0204 | Durian.CopyFrom | Error |  Target member is not compatible. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0204.md)]
 DUR0205 | Durian.CopyFrom | Error |  Implementation of the target member is not accessible. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0205.md)]
 DUR0206 | Durian.CopyFrom | Warning |  Equivalent CopyFromTypeAttribute already specified. [[DOC](https://github.com/piotrstenke/Durian/tree/master/docs/CopyFrom/DUR0206.md)]

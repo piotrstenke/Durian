@@ -4,7 +4,7 @@ using System.Linq;
 using Durian.Analysis.SymbolContainers;
 using Microsoft.CodeAnalysis;
 
-namespace Durian.Analysis.Extensions;
+namespace Durian.Analysis;
 
 /// <summary>
 /// Contains various extension methods for the <see cref="SyntaxTree"/> class.
