@@ -106,7 +106,7 @@ public sealed class TestableCompilationData : ICompilationData
 	}
 
 	/// <summary>
-	/// Creates a new <see cref="TestableCompilationData"/>.
+	/// Creates a new <see cref="TestableCompilationData"/> for the specified <paramref name="compilation"/>.
 	/// </summary>
 	/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used as the base compilation of the newly-created <see cref="TestableCompilationData"/>.</param>
 	public static TestableCompilationData Create(CSharpCompilation? compilation)

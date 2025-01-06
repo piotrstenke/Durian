@@ -10,6 +10,10 @@ namespace Durian.Tests;
 
 public sealed class EnableLoggingAttributeTests : AnalyzerTest<EnableLoggingAttributeAnalyzer>
 {
+	public EnableLoggingAttributeTests() : base(TestableCompilationData.Create(RoslynUtilities.CreateBaseCompilation().AddReferences(typeof(EnableLoggingAttribute).Assembly)))
+	{
+	}
+
 	[Fact]
 	public async Task Success_When_HasSingleAttribute()
 	{

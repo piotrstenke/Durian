@@ -75,7 +75,7 @@ public class FriendClassAccessAnalyzer : DurianAnalyzer<FriendClassCompilationDa
 
 		ISymbol? accessedSymbol = context.SemanticModel.GetSymbolInfo(context.Node).Symbol;
 
-		if (accessedSymbol is null || !FriendClassDeclarationAnalyzer.IsInternal(accessedSymbol))
+		if (accessedSymbol is null || !FriendClassDeclarationAnalyzer.IsInternalAccess(accessedSymbol))
 		{
 			return;
 		}
@@ -97,7 +97,7 @@ public class FriendClassAccessAnalyzer : DurianAnalyzer<FriendClassCompilationDa
 
 		ISymbol? accessedSymbol = context.SemanticModel.GetDeclaredSymbol(context.Node);
 
-		if (accessedSymbol is null || !FriendClassDeclarationAnalyzer.IsInternal(accessedSymbol))
+		if (accessedSymbol is null || !FriendClassDeclarationAnalyzer.IsInternalAccess(accessedSymbol))
 		{
 			return;
 		}
@@ -124,7 +124,7 @@ public class FriendClassAccessAnalyzer : DurianAnalyzer<FriendClassCompilationDa
 
 		IMethodSymbol? accessedCtor = GetAccessedConstructorSymbol(context.Node, context.SemanticModel, currentType);
 
-		if (accessedCtor is null || !FriendClassDeclarationAnalyzer.IsInternal(accessedCtor))
+		if (accessedCtor is null || !FriendClassDeclarationAnalyzer.IsInternalAccess(accessedCtor))
 		{
 			return;
 		}

@@ -1097,6 +1097,7 @@ public static class EnumExtensions
 			SpecialAttribute.CallerMemberName or
 			SpecialAttribute.SkipLocalsInit or
 			SpecialAttribute.ModuleInitializer or
+			SpecialAttribute.InternalsVisibleTo or
 			SpecialAttribute.MethodImpl
 				=> "System.Runtime.CompilerServices",
 

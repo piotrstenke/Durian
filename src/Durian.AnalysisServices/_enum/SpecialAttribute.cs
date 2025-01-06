@@ -115,4 +115,9 @@ public enum SpecialAttribute
 	/// The attribute is <see cref="GeneratedCodeAttribute"/>
 	/// </summary>
 	GeneratedCode = 20,
+
+	/// <summary>
+	/// The attribute is <see cref="InternalsVisibleToAttribute"/>.
+	/// </summary>
+	InternalsVisibleTo = 21,
 }

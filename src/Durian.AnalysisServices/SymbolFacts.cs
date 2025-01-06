@@ -1828,7 +1828,7 @@ public static class SymbolFacts
 	/// <param name="other"><see cref="ISymbol"/> to compare.</param>
 	public static bool IsEquivalentTo(this ISymbol symbol, ISymbol? other)
 	{
-		return symbol.IsEquivalentTo(other);
+		return SymbolEqualityComparer.Default.Equals(symbol, other);
 	}
 
 	/// <summary>
@@ -1851,12 +1851,12 @@ public static class SymbolFacts
 		// type:  IA<in T>
 		// other: IB<in T> : IA<T>
 
-		if (SymbolEqualityComparer.Default.Equals(other, other.ConstructedFrom))
+		if (other.IsEquivalentTo(other.ConstructedFrom))
 		{
-			return type.AllInterfaces.Any(intf => SymbolEqualityComparer.Default.Equals(intf.ConstructedFrom, other));
+			return type.AllInterfaces.Any(intf => intf.ConstructedFrom.IsEquivalentTo(other));
 		}
 
-		return type.Interfaces.Any(intf => IsVariant(intf));
+		return type.Interfaces.Any(IsVariant);
 
 		bool IsSameOrConstructed(INamedTypeSymbol type)
 		{
@@ -1871,7 +1871,7 @@ public static class SymbolFacts
 			// type:  IA<string>
 			// other: IA<object>
 
-			if (SymbolEqualityComparer.Default.Equals(type.ConstructedFrom, other.ConstructedFrom))
+			if (type.ConstructedFrom.IsEquivalentTo(other.ConstructedFrom))
 			{
 				ImmutableArray<ITypeSymbol> typeArgs = type.TypeArguments;
 				ImmutableArray<ITypeSymbol> otherArgs = other.TypeArguments;

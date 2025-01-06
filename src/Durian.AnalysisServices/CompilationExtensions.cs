@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Durian.Analysis;
@@ -13,6 +15,46 @@ namespace Durian.Analysis;
 /// </summary>
 public static class CompilationExtensions
 {
+	/// <summary>
+	/// Creates a new compilation with additional assembly references.
+	/// </summary>
+	/// <param name="compilation">Compilation to add the references to.</param>
+	/// <param name="assemblies">Assemblies to reference.</param>
+	public static Compilation AddReferences(this Compilation compilation, IEnumerable<Assembly> assemblies)
+	{
+		return compilation.AddReferences(assemblies.Select(x => MetadataReference.CreateFromFile(x.Location)));
+	}
+
+	/// <summary>
+	/// Creates a new compilation with additional assembly reference.
+	/// </summary>
+	/// <param name="compilation">Compilation to add the references to.</param>
+	/// <param name="assembly">Assembly to reference.</param>
+	public static Compilation AddReferences(this Compilation compilation, Assembly assembly)
+	{
+		return compilation.AddReferences([assembly]);
+	}
+
+	/// <summary>
+	/// Creates a new compilation with additional assembly references.
+	/// </summary>
+	/// <param name="compilation">Compilation to add the references to.</param>
+	/// <param name="assemblies">Assemblies to reference.</param>
+	public static CSharpCompilation AddReferences(this CSharpCompilation compilation, IEnumerable<Assembly> assemblies)
+	{
+		return ((compilation as Compilation).AddReferences(assemblies) as CSharpCompilation)!;
+	}
+
+	/// <summary>
+	/// Creates a new compilation with additional assembly reference.
+	/// </summary>
+	/// <param name="compilation">Compilation to add the references to.</param>
+	/// <param name="assembly">Assembly to reference.</param>
+	public static CSharpCompilation AddReferences(this CSharpCompilation compilation, Assembly assembly)
+	{
+		return ((compilation as Compilation).AddReferences(assembly) as CSharpCompilation)!;
+	}
+
 	/// <summary>
 	/// Returns a collection of all <see cref="INamespaceSymbol"/>s contained withing the specified <paramref name="compilation"/>.
 	/// </summary>

@@ -51,7 +51,7 @@ public class FriendClassDeclarationAnalyzer : DurianAnalyzer<FriendClassCompilat
 		return new FriendClassCompilationData(compilation);
 	}
 
-	internal static bool IsInternal(ISymbol symbol)
+	internal static bool IsInternalAccess(ISymbol symbol)
 	{
 		return symbol.DeclaredAccessibility is Accessibility.Internal or Accessibility.ProtectedOrInternal;
 	}
@@ -79,7 +79,7 @@ public class FriendClassDeclarationAnalyzer : DurianAnalyzer<FriendClassCompilat
 
 		List<Diagnostic> diagnostics = new(attributes.Length * 2);
 
-		ValidateConfiguration(symbol, config, diagnostics);
+		ValidateConfiguration(symbol, compilation, config, diagnostics);
 		AnalyzeAttributes(attributes, symbol, config, compilation, diagnostics);
 
 		foreach (Diagnostic d in diagnostics)
@@ -130,7 +130,7 @@ public class FriendClassDeclarationAnalyzer : DurianAnalyzer<FriendClassCompilat
 				));
 			}
 
-			if (!config.IncludeInherited && !symbol.GetMembers().Any(IsInternal))
+			if (!config.IncludeInherited && !symbol.GetMembers().Any(IsInternalAccess))
 			{
 				Location? attrLocation = attribute.GetLocation();
 
@@ -222,9 +222,16 @@ public class FriendClassDeclarationAnalyzer : DurianAnalyzer<FriendClassCompilat
 		}
 	}
 
-	private static bool IsValidInternalParentMember(ISymbol symbol)
+	private static bool IsValidInternalParentMember(FriendClassCompilationData compilation, IAssemblySymbol currentAssembly, ISymbol symbol)
 	{
-		if (!IsInternal(symbol))
+		if (symbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
+		{
+			if(!compilation.Compilation.IsSymbolAccessibleWithin(symbol, currentAssembly))
+			{
+				return false;
+			}
+		}
+		else if(symbol.DeclaredAccessibility != Accessibility.Internal)
 		{
 			return false;
 		}
@@ -348,6 +355,7 @@ public class FriendClassDeclarationAnalyzer : DurianAnalyzer<FriendClassCompilat
 
 	private static void ValidateConfiguration(
 		INamedTypeSymbol symbol,
+		FriendClassCompilationData compilation,
 		FriendClassConfiguration configuration,
 		List<Diagnostic> diagnostics
 	)
@@ -376,7 +384,7 @@ public class FriendClassDeclarationAnalyzer : DurianAnalyzer<FriendClassCompilat
 		{
 			if (symbol.HasExplicitBaseType())
 			{
-				if (!symbol.BaseType!.GetAllMembers().Any(IsValidInternalParentMember))
+				if (!symbol.BaseType!.GetAllMembers().Any(m => IsValidInternalParentMember(compilation, symbol.ContainingAssembly, m)))
 				{
 					diagnostics.Add(Diagnostic.Create(
 						descriptor: DUR0316_BaseTypeHasNoInternalInstanceMembers,
