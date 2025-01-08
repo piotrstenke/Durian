@@ -41,7 +41,12 @@ public sealed class GlobalScopeDeclarationAnalyzer : DurianAnalyzer<GlobalScopeC
 
 	internal static bool Analyze(ISymbol symbol)
 	{
-		return symbol is INamedTypeSymbol type && Analyze(type, null);
+		return Analyze(symbol, null);
+	}
+
+	internal static bool Analyze(ISymbol symbol, Action<Diagnostic>? reportDiagnostic)
+	{
+		return symbol is INamedTypeSymbol type && Analyze(type, reportDiagnostic);
 	}
 
 	private static void Analyze(SymbolAnalysisContext context, GlobalScopeCompilationData compilation)
@@ -65,6 +70,7 @@ public sealed class GlobalScopeDeclarationAnalyzer : DurianAnalyzer<GlobalScopeC
 	{
 		Location? location = null;
 		string? name = null;
+		bool isValid = true;
 
 		if (!type.IsStatic && !ReportDiagnostic(DUR0501_TypeIsNotStaticClass))
 		{
@@ -76,17 +82,18 @@ public sealed class GlobalScopeDeclarationAnalyzer : DurianAnalyzer<GlobalScopeC
 			return false;
 		}
 
-		return true;
+		return isValid;
 
 		bool ReportDiagnostic(DiagnosticDescriptor descriptor)
 		{
+			isValid = false;
+
 			if (reportDiagnostic is not null)
 			{
 				location ??= type.Locations.FirstOrDefault();
 				name ??= type.GetFullyQualifiedName();
 
 				reportDiagnostic.Invoke(Diagnostic.Create(descriptor, location, name));
-
 				return true;
 			}
 

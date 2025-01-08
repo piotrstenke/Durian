@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using Durian.Analysis.Logging;
+using Durian.Analysis;
 using Microsoft.CodeAnalysis;
 
 namespace Durian.TestServices;
@@ -9,7 +9,7 @@ namespace Durian.TestServices;
 /// A <see cref="IHintNameProvider"/> that returns name of the current test.
 /// </summary>
 [DebuggerDisplay("TestName = {TestName}, Counter = {Counter}")]
-public sealed class TestNameToFile : IHintNameProvider
+public sealed class TestHintNameProvider : IHintNameProvider
 {
 	private readonly object _syncRoot = new();
 	private int _counter = 0;
@@ -68,20 +68,20 @@ public sealed class TestNameToFile : IHintNameProvider
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="TestNameToFile"/> class.
+	/// Initializes a new instance of the <see cref="TestHintNameProvider"/> class.
 	/// </summary>
-	public TestNameToFile()
+	public TestHintNameProvider()
 	{
 		_testName = "test";
 		_current = _testName;
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="TestNameToFile"/> class.
+	/// Initializes a new instance of the <see cref="TestHintNameProvider"/> class.
 	/// </summary>
 	/// <param name="testName">Name of the current test.</param>
 	/// <exception cref="ArgumentException"><paramref name="testName"/> cannot be <see langword="null"/> or empty.</exception>
-	public TestNameToFile(string testName)
+	public TestHintNameProvider(string testName)
 	{
 		if (string.IsNullOrWhiteSpace(testName))
 		{
@@ -92,7 +92,9 @@ public sealed class TestNameToFile : IHintNameProvider
 		_current = testName;
 	}
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Returns the current hint name.
+	/// </summary>
 	public string GetHintName()
 	{
 		lock (_syncRoot)
@@ -130,6 +132,11 @@ public sealed class TestNameToFile : IHintNameProvider
 	}
 
 	string IHintNameProvider.GetHintName(ISymbol symbol)
+	{
+		return GetHintName();
+	}
+
+	string IHintNameProvider.GetHintName(string symbolName)
 	{
 		return GetHintName();
 	}

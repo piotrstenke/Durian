@@ -9,7 +9,9 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Durian.TestServices;
 
-/// <inheritdoc cref="ITestableGenerator"/>
+/// <summary>
+/// <see cref="ITestableGenerator"/> implementation that supports <see cref="DurianGeneratorWithContext{TContext}"/>.
+/// </summary>
 /// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> this generator uses.</typeparam>
 public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>, ITestableGenerator where TContext : GeneratorPassContext
 {
@@ -25,9 +27,7 @@ public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>,
 	/// <inheritdoc/>
 	public override int NumStaticTrees => UnderlayingGenerator.NumStaticTrees;
 
-	/// <summary>
-	/// Name of the test that is currently running.
-	/// </summary>
+	/// <inheritdoc/>
 	public string TestName { get; }
 
 	/// <inheritdoc cref="ITestableGenerator.UnderlayingGenerator"/>
@@ -54,7 +54,7 @@ public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>,
 		}
 
 		UnderlayingGenerator = generator;
-		TestName = testName ?? string.Empty;
+		TestName = string.IsNullOrWhiteSpace(testName) ? TestUtilities.DefaultTestName : testName!;
 	}
 
 	/// <inheritdoc/>
@@ -154,7 +154,7 @@ public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>,
 
 		if (newContext is not null)
 		{
-			newContext.FileNameProvider = new TestNameToFile(TestName);
+			newContext.FileNameProvider = new TestHintNameProvider(TestName);
 		}
 
 		return newContext;
@@ -200,7 +200,7 @@ public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>,
 
 	private void SetAnalyzerMode(TContext context)
 	{
-		if (context.FileNameProvider is not TestNameToFile t)
+		if (context.FileNameProvider is not TestHintNameProvider t)
 		{
 			return;
 		}
@@ -211,7 +211,7 @@ public class TestableGenerator<TContext> : DurianGeneratorWithContext<TContext>,
 
 	private void SetGeneratorMode(TContext context)
 	{
-		if (context.FileNameProvider is not TestNameToFile t)
+		if (context.FileNameProvider is not TestHintNameProvider t)
 		{
 			return;
 		}

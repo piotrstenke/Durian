@@ -1,5 +1,4 @@
 using System;
-using Durian.Analysis;
 using Durian.Analysis.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -9,7 +8,7 @@ namespace Durian.TestServices;
 /// <summary>
 /// An abstract class that provides methods to test <see cref="ISourceGenerator"/>s.
 /// </summary>
-public abstract class GeneratorTest
+public abstract class SourceGeneratorTest
 {
 	/// <summary>
 	/// An <see cref="ISourceGenerator"/> that is being tested.
@@ -17,18 +16,18 @@ public abstract class GeneratorTest
 	public ISourceGenerator UnderlayingGenerator { get; }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="GeneratorTest"/> class.
+	/// Initializes a new instance of the <see cref="SourceGeneratorTest"/> class.
 	/// </summary>
-	protected GeneratorTest()
+	protected SourceGeneratorTest()
 	{
 		UnderlayingGenerator = CreateGenerator();
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="GeneratorTest"/> class.
+	/// Initializes a new instance of the <see cref="SourceGeneratorTest"/> class.
 	/// </summary>
 	/// <param name="enableDiagnostics">Determines whether to enable diagnostics for the created <see cref="ISourceGenerator"/> if it supports any.</param>
-	protected GeneratorTest(bool enableDiagnostics)
+	protected SourceGeneratorTest(bool enableDiagnostics)
 	{
 		ISourceGenerator generator = CreateGenerator();
 

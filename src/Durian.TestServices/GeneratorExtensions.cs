@@ -117,16 +117,46 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Converts the specified <paramref name="generator"/> into a <see cref="TestableGenerator{TContext}"/>.
+	/// Creates a new <see cref="TestableGenerator{TContext}"/> for the specified underlaying <paramref name="generator"/>.
+	/// </summary>
+	/// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> used to generate sources.</typeparam>
+	/// <param name="generator"><see cref="IDurianGenerator"/> that is used to actually generate sources.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+	public static TestableGenerator<TContext> CreateTestable<TContext>(this DurianGeneratorWithContext<TContext> generator) where TContext : GeneratorPassContext
+	{
+		return new TestableGenerator<TContext>(generator);
+	}
+
+	/// <summary>
+	/// Creates a new <see cref="TestableGenerator{TContext}"/> for the specified underlaying <paramref name="generator"/>.
 	/// </summary>
 	/// <typeparam name="TContext">Type of <see cref="IGeneratorPassContext"/> used to generate sources.</typeparam>
 	/// <param name="generator"><see cref="IDurianGenerator"/> that is used to actually generate sources.</param>
 	/// <param name="testName">Name of the currently executing test.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
-	/// <exception cref="ArgumentException"><paramref name="testName"/> cannot be <see langword="null"/> or empty.</exception>
-	public static TestableGenerator<TContext> CreateTestable<TContext>(this DurianGeneratorWithContext<TContext> generator, string testName) where TContext : GeneratorPassContext
+	public static TestableGenerator<TContext> CreateTestable<TContext>(this DurianGeneratorWithContext<TContext> generator, string? testName) where TContext : GeneratorPassContext
 	{
 		return new TestableGenerator<TContext>(generator, testName);
+	}
+
+	/// <summary>
+	/// Creates a new <see cref="TestableIncrementalGenerator"/> for the specified underlaying <paramref name="generator"/>.
+	/// </summary>>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+	public static TestableIncrementalGenerator CreateTestable(this DurianIncrementalGenerator generator)
+	{
+		return new TestableIncrementalGenerator(generator);
+	}
+
+	/// <summary>
+	/// Creates a new <see cref="TestableIncrementalGenerator"/> for the specified underlaying <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IDurianGenerator"/> that is used to actually generate sources.</param>
+	/// <param name="testName">Name of the currently executing test.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>.</exception>
+	public static TestableIncrementalGenerator CreateTestable(this DurianIncrementalGenerator generator, string testName)
+	{
+		return new TestableIncrementalGenerator(generator, testName);
 	}
 
 	/// <summary>
@@ -246,9 +276,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
@@ -259,9 +289,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -271,9 +301,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
@@ -284,9 +314,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
@@ -297,9 +327,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -309,9 +339,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
@@ -322,9 +352,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used a input of the tested <paramref name="generatorDriver"/>.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="generatorDriver"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
@@ -351,9 +381,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
@@ -365,9 +395,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
@@ -379,9 +409,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
@@ -392,9 +422,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
@@ -406,9 +436,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
@@ -419,9 +449,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generatorDriver"/>.</param>
@@ -433,9 +463,9 @@ public static class GeneratorExtensions
 	}
 
 	/// <summary>
-	/// Performs a test on all <see cref="ISourceGenerator"/>s registered in the provided <paramref name="generatorDriver"/>.
+	/// Performs a test on all source generators registered in the provided <paramref name="generatorDriver"/>.
 	/// </summary>
-	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> to run a tests on all registered <see cref="ISourceGenerator"/> of.</param>
+	/// <param name="generatorDriver"><see cref="CSharpGeneratorDriver"/> used to run a tests on all registered source generators.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generatorDriver"/>.</param>
 	/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used a input of the tested <paramref name="generatorDriver"/>.</param>
 	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
@@ -465,7 +495,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
@@ -484,7 +514,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -496,7 +526,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
@@ -515,7 +545,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
@@ -534,7 +564,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
@@ -546,7 +576,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
@@ -565,7 +595,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used a input of the tested <paramref name="generator"/>.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
@@ -582,7 +612,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
@@ -602,7 +632,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
@@ -622,7 +652,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
@@ -635,7 +665,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
@@ -655,7 +685,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
@@ -668,7 +698,7 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
 	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
@@ -688,12 +718,253 @@ public static class GeneratorExtensions
 	/// <summary>
 	/// Performs a test of the specified <paramref name="generator"/>.
 	/// </summary>
-	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test of.</param>
+	/// <param name="generator"><see cref="ISourceGenerator"/> to run a test on.</param>
 	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
 	/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used a input of the tested <paramref name="generator"/>.</param>
 	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
 	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
 	public static TResult RunTest<TResult>(this ISourceGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, CSharpCompilation compilation) where TResult : IGeneratorTestResult
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static IGeneratorTestResult RunTest(this IIncrementalGenerator generator, GeneratorTestResultProvider resultProvider, string? source, params Assembly[]? assemblies)
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		CSharpCompilation compilation = RoslynUtilities.CreateCompilationWithAssemblies(source, assemblies);
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static IGeneratorTestResult RunTest(this IIncrementalGenerator generator, GeneratorTestResultProvider resultProvider, string? source)
+	{
+		return RunTest(generator, resultProvider, source, references: default);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static IGeneratorTestResult RunTest(this IIncrementalGenerator generator, GeneratorTestResultProvider resultProvider, string? source, params MetadataReference[]? references)
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		CSharpCompilation compilation = RoslynUtilities.CreateCompilationWithReferences(source, references);
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static IGeneratorTestResult RunTest(this IIncrementalGenerator generator, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources, params Assembly[]? assemblies)
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		CSharpCompilation compilation = RoslynUtilities.CreateCompilationWithAssemblies(sources, assemblies);
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static IGeneratorTestResult RunTest(this IIncrementalGenerator generator, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources)
+	{
+		return RunTest(generator, resultProvider, sources, references: default);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static IGeneratorTestResult RunTest(this IIncrementalGenerator generator, GeneratorTestResultProvider resultProvider, IEnumerable<string>? sources, params MetadataReference[]? references)
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		CSharpCompilation compilation = RoslynUtilities.CreateCompilationWithReferences(sources, references);
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used a input of the tested <paramref name="generator"/>.</param>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+	public static IGeneratorTestResult RunTest(this IIncrementalGenerator generator, GeneratorTestResultProvider resultProvider, CSharpCompilation compilation)
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static TResult RunTest<TResult>(this IIncrementalGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, string? source, params Assembly[]? assemblies) where TResult : IGeneratorTestResult
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		CSharpCompilation compilation = RoslynUtilities.CreateCompilationWithAssemblies(source, assemblies);
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static TResult RunTest<TResult>(this IIncrementalGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, string? source, params MetadataReference[]? references) where TResult : IGeneratorTestResult
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		CSharpCompilation compilation = RoslynUtilities.CreateCompilationWithReferences(source, references);
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="source">A <see cref="string"/> that will be parsed as a <see cref="SyntaxTree"/> and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static TResult RunTest<TResult>(this IIncrementalGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, string? source) where TResult : IGeneratorTestResult
+	{
+		return RunTest(generator, resultProvider, source, references: default);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <param name="assemblies">An array of <see cref="Assembly"/> instances to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static TResult RunTest<TResult>(this IIncrementalGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, IEnumerable<string>? sources, params Assembly[]? assemblies) where TResult : IGeneratorTestResult
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		CSharpCompilation compilation = RoslynUtilities.CreateCompilationWithAssemblies(sources, assemblies);
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static TResult RunTest<TResult>(this IIncrementalGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, IEnumerable<string>? sources) where TResult : IGeneratorTestResult
+	{
+		return RunTest(generator, resultProvider, sources, references: default);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="sources">A collection of <see cref="string"/>s that will be parsed as <see cref="SyntaxTree"/>s and added to the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <param name="references">An array of <see cref="MetadataReference"/>s to be referenced by the input <see cref="CSharpCompilation"/> of the tested <paramref name="generator"/>.</param>
+	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>.</exception>
+	public static TResult RunTest<TResult>(this IIncrementalGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, IEnumerable<string>? sources, params MetadataReference[]? references) where TResult : IGeneratorTestResult
+	{
+		if (generator is null)
+		{
+			throw new ArgumentNullException(nameof(generator));
+		}
+
+		CSharpCompilation compilation = RoslynUtilities.CreateCompilationWithReferences(sources, references);
+		return CSharpGeneratorDriver.Create(generator).RunTest(resultProvider, compilation);
+	}
+
+	/// <summary>
+	/// Performs a test of the specified <paramref name="generator"/>.
+	/// </summary>
+	/// <param name="generator"><see cref="IIncrementalGenerator"/> to run a test on.</param>
+	/// <param name="resultProvider">A delegate that creates the target <see cref="IGeneratorTestResult"/> of type <typeparamref name="TResult"/> from the data provided by the tested <paramref name="generator"/>.</param>
+	/// <param name="compilation">A <see cref="CSharpCompilation"/> to be used a input of the tested <paramref name="generator"/>.</param>
+	/// <typeparam name="TResult">Type of <see cref="IGeneratorTestResult"/> to create after the test is run.</typeparam>
+	/// <exception cref="ArgumentNullException"><paramref name="generator"/> is <see langword="null"/>. -or- <paramref name="resultProvider"/> is <see langword="null"/>. -or- <paramref name="compilation"/> is <see langword="null"/>.</exception>
+	public static TResult RunTest<TResult>(this IIncrementalGenerator generator, GeneratorTestResultProvider<TResult> resultProvider, CSharpCompilation compilation) where TResult : IGeneratorTestResult
 	{
 		if (generator is null)
 		{

@@ -12,11 +12,24 @@ namespace Durian.Analysis;
 /// </summary>
 public abstract class DurianIncrementalGenerator : DurianGeneratorBase, IIncrementalGenerator
 {
+	private IHintNameProvider _hintNameProvider;
+
+	/// <summary>
+	/// <see cref="IHintNameProvider"/> that creates hint names for the generated source.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Value is <see langword="null"/>.</exception>
+	public IHintNameProvider HintNameProvider
+	{
+		get => _hintNameProvider;
+		set => _hintNameProvider = value ?? throw new ArgumentNullException(nameof(HintNameProvider));
+	}
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DurianIncrementalGenerator"/> class.
 	/// </summary>
 	protected DurianIncrementalGenerator()
 	{
+		_hintNameProvider = CreateHintNameProvider();
 	}
 
 	/// <summary>
@@ -26,6 +39,7 @@ public abstract class DurianIncrementalGenerator : DurianGeneratorBase, IIncreme
 	/// <exception cref="ArgumentNullException"><paramref name="logHandler"/> is <see langword="null"/>.</exception>
 	protected DurianIncrementalGenerator(IGeneratorLogHandler logHandler) : base(logHandler)
 	{
+		_hintNameProvider = CreateHintNameProvider();
 	}
 
 	/// <summary>
@@ -34,6 +48,7 @@ public abstract class DurianIncrementalGenerator : DurianGeneratorBase, IIncreme
 	/// <param name="context">Configures how this generator is initialized.</param>
 	protected DurianIncrementalGenerator(in GeneratorLogCreationContext context) : base(in context)
 	{
+		_hintNameProvider = CreateHintNameProvider();
 	}
 
 	/// <summary>
@@ -42,6 +57,7 @@ public abstract class DurianIncrementalGenerator : DurianGeneratorBase, IIncreme
 	/// <param name="loggingConfiguration">Determines how the source generator should behave when logging information.</param>
 	protected DurianIncrementalGenerator(LoggingConfiguration? loggingConfiguration) : base(loggingConfiguration)
 	{
+		_hintNameProvider = CreateHintNameProvider();
 	}
 
 	/// <inheritdoc/>
@@ -65,7 +81,7 @@ public abstract class DurianIncrementalGenerator : DurianGeneratorBase, IIncreme
 	/// </summary>
 	/// <param name="compilation">Current compilation.</param>
 	/// <param name="context">The <see cref="IncrementalGeneratorInitializationContext"/> to register callbacks on</param>
-	protected abstract void Register(IncrementalValueProvider<Compilation> compilation, IncrementalGeneratorInitializationContext context);
+	protected internal abstract void Register(IncrementalValueProvider<Compilation> compilation, IncrementalGeneratorInitializationContext context);
 
 	/// <summary>
 	/// Adds the specified <paramref name="source"/> to the <paramref name="context"/>.
@@ -79,7 +95,7 @@ public abstract class DurianIncrementalGenerator : DurianGeneratorBase, IIncreme
 		AddSource(hintName, tree, context);
 	}
 
-		/// <summary>
+	/// <summary>
 	/// Adds the specified <paramref name="source"/> to the <paramref name="context"/>.
 	/// </summary>
 	/// <param name="hintName">An identifier that can be used to reference this source text, must be unique within this generator.</param>
@@ -101,5 +117,10 @@ public abstract class DurianIncrementalGenerator : DurianGeneratorBase, IIncreme
 	{
 		context.AddSource(hintName, syntaxTree.GetText(context.CancellationToken));
 		LogSource(hintName, syntaxTree, context.CancellationToken);
+	}
+
+	private static SymbolNameHintProvider CreateHintNameProvider()
+	{
+		return new();
 	}
 }

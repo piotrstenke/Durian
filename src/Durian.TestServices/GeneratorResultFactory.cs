@@ -71,22 +71,12 @@ public static class GeneratorResultFactory
 	/// </exception>
 	public static GeneratedSourceResult CreateSourceResult(string source, string? hintName)
 	{
-		if (string.IsNullOrWhiteSpace(source))
+		if (string.IsNullOrWhiteSpace(source) || CSharpSyntaxTree.ParseText(source) is not SyntaxTree tree)
 		{
-			throw GetException();
-		}
-
-		if (CSharpSyntaxTree.ParseText(source) is not SyntaxTree tree)
-		{
-			throw GetException();
+			throw new ArgumentException($"A {nameof(SyntaxTree)} couldn't be created from the specified {nameof(source)}!");
 		}
 
 		return CreateSourceResult(tree, hintName);
-
-		static ArgumentException GetException()
-		{
-			return new ArgumentException($"A {nameof(SyntaxTree)} couldn't be created from the specified {nameof(source)}!");
-		}
 	}
 
 	/// <inheritdoc cref="CreateSourceResult(SyntaxTree, string)"/>

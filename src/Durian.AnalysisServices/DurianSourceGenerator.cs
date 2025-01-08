@@ -128,7 +128,7 @@ public abstract class DurianSourceGenerator<TContext> : DurianGeneratorWithConte
 		pass.State = GeneratorState.Running;
 
 		pass.ParseOptions ??= context.ParseOptions;
-		pass.FileNameProvider ??= new SymbolNameToFile();
+		pass.FileNameProvider ??= new SymbolNameHintProvider();
 
 		FillContext(pass);
 

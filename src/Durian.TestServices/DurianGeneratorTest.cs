@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Durian.Analysis;
 using Durian.Analysis.CodeGeneration;
 using Durian.Analysis.Logging;
+using Microsoft.CodeAnalysis;
 
 namespace Durian.TestServices;
 
@@ -31,6 +32,11 @@ public abstract class DurianGeneratorTest<T> : LoggableGeneratorTest<ITestableGe
 	protected DurianGeneratorTest(bool enableDiagnostics) : base(enableDiagnostics, typeof(T))
 	{
 		UnderlayingGenerator = CreateUnderlayingGenerator(_configuration);
+
+		if(UnderlayingGenerator is not IIncrementalGenerator and not ISourceGenerator)
+		{
+			throw new InvalidOperationException($"{nameof(UnderlayingGenerator)} does not implement the {nameof(ISourceGenerator)} or {nameof(IIncrementalGenerator)} interfaces");
+		}
 	}
 
 	/// <inheritdoc/>
@@ -96,13 +102,24 @@ public abstract class DurianGeneratorTest<T> : LoggableGeneratorTest<ITestableGe
 	/// Creates an <see cref="ITestableGenerator"/> for the current test.
 	/// </summary>
 	/// <param name="testName">Name of the current test.</param>
-	protected abstract ITestableGenerator CreateTestableGenerator(string testName);
+	protected virtual ITestableGenerator CreateTestableGenerator(string testName)
+	{
+		if(UnderlayingGenerator is DurianIncrementalGenerator i)
+		{
+			return i.CreateTestable(testName);
+		}
+
+		throw new InvalidOperationException($"Could not automatically create a new {nameof(ITestableGenerator)}. Consider overriding the {nameof(CreateTestableGenerator)} method");
+	}
 
 	/// <summary>
 	/// Creates the underlaying <typeparamref name="T"/> generator.
 	/// </summary>
 	/// <param name="configuration">Configuration for the <see cref="IDurianGenerator"/>.</param>
-	protected abstract T CreateUnderlayingGenerator(LoggingConfiguration configuration);
+	protected virtual T CreateUnderlayingGenerator(LoggingConfiguration configuration)
+	{
+		return (T)Activator.CreateInstance(typeof(T), configuration);
+	}
 
 	/// <summary>
 	/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.

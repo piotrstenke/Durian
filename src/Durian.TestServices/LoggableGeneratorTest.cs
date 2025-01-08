@@ -62,7 +62,14 @@ public abstract class LoggableGeneratorTest<T>
 	/// <exception cref="InvalidOperationException"><see cref="CreateGenerator(LoggingConfiguration, string)"/> returned <see langword="null"/>.</exception>
 	public virtual SingleGeneratorTestResult RunGenerator(string? input, int index, [CallerMemberName] string testName = "")
 	{
-		return GeneratorTest.RunGenerator(GetGeneratorAndTryEnableDiagnostics(testName), input, index);
+		T generator = GetGeneratorAndTryEnableDiagnostics(testName);
+
+		if (generator is IIncrementalGenerator incremental)
+		{
+			return IncrementalGeneratorTest.RunGenerator(incremental, input, index);
+		}
+
+		return SourceGeneratorTest.RunGenerator((generator as ISourceGenerator)!, input, index);
 	}
 
 	/// <summary>
@@ -87,7 +94,14 @@ public abstract class LoggableGeneratorTest<T>
 	/// <exception cref="InvalidOperationException"><see cref="CreateGenerator(LoggingConfiguration, string)"/> returned <see langword="null"/>.</exception>
 	public virtual SingleGeneratorTestResult RunGeneratorWithDependency(string? input, string external, int index, [CallerMemberName] string testName = "")
 	{
-		return GeneratorTest.RunGeneratorWithDependency(GetGeneratorAndTryEnableDiagnostics(testName), input, external, index);
+		T generator = GetGeneratorAndTryEnableDiagnostics(testName);
+
+		if (generator is IIncrementalGenerator incremental)
+		{
+			return IncrementalGeneratorTest.RunGeneratorWithDependency(incremental, input, external, index);
+		}
+
+		return SourceGeneratorTest.RunGeneratorWithDependency((generator as ISourceGenerator)!, input, external, index);
 	}
 
 	/// <summary>
@@ -108,7 +122,14 @@ public abstract class LoggableGeneratorTest<T>
 	/// <param name="testName">Name of the test that is currently performed.</param>
 	public virtual MultipleGeneratorTestResult RunGeneratorWithMultipleOutputs(string? input, int startIndex, [CallerMemberName] string testName = "")
 	{
-		return GeneratorTest.RunGeneratorWithMultipleOutputs(GetGeneratorAndTryEnableDiagnostics(testName), input, startIndex);
+		T generator = GetGeneratorAndTryEnableDiagnostics(testName);
+
+		if(generator is IIncrementalGenerator incremental)
+		{
+			return IncrementalGeneratorTest.RunGeneratorWithMultipleOutputs(incremental, input, startIndex);
+		}
+
+		return SourceGeneratorTest.RunGeneratorWithMultipleOutputs((generator as ISourceGenerator)!, input, startIndex);
 	}
 
 	/// <summary>
@@ -118,7 +139,7 @@ public abstract class LoggableGeneratorTest<T>
 	/// <param name="testName">Name of the current test.</param>
 	protected abstract T CreateGenerator(LoggingConfiguration configuration, string testName);
 
-	private ISourceGenerator GetGeneratorAndTryEnableDiagnostics(string testName)
+	private T GetGeneratorAndTryEnableDiagnostics(string testName)
 	{
 		T generator = CreateGenerator(_configuration, testName);
 
@@ -127,9 +148,9 @@ public abstract class LoggableGeneratorTest<T>
 			throw new InvalidOperationException($"{nameof(CreateGenerator)} returned null");
 		}
 
-		if (generator is not ISourceGenerator s)
+		if (generator is not ISourceGenerator and not IIncrementalGenerator)
 		{
-			throw new InvalidOperationException($"{nameof(CreateGenerator)} returned a generator that does not implement the {nameof(ISourceGenerator)} interface");
+			throw new InvalidOperationException($"{nameof(CreateGenerator)} returned a generator that does not implement the {nameof(ISourceGenerator)} or {nameof(IIncrementalGenerator)} interfaces");
 		}
 
 		if (_enableDiagnostics && generator is ILoggableSourceGenerator g && g.LogHandler is not null)
@@ -137,6 +158,6 @@ public abstract class LoggableGeneratorTest<T>
 			g.LogHandler.EnableDiagnosticsIfSupported();
 		}
 
-		return s;
+		return generator;
 	}
 }
